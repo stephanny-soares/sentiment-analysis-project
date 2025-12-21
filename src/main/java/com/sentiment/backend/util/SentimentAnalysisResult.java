@@ -2,7 +2,6 @@ package com.sentiment.backend.util;
 
 /**
  * Resultado interno da análise de sentimento.
- * Contém o tipo, score e probabilidade.
  */
 public class SentimentAnalysisResult {
 
@@ -12,19 +11,21 @@ public class SentimentAnalysisResult {
         NEGATIVO
     }
 
-    private final SentimentType type; // Tipo do sentimento
-    private final int score;           // Score calculado
-    private final double probability;  // Probabilidade estimada (0.0 a 1.0)
+    private final SentimentType type;
+    private final int score;
+    private final double probability;
 
-    // Construtor
     public SentimentAnalysisResult(SentimentType type, int score, double probability) {
         this.type = type;
         this.score = score;
         this.probability = probability;
     }
 
-    // Getters
     public SentimentType getType() { return type; }
     public int getScore() { return score; }
+
+    // Altere este nome ou adicione este como um "alias"
+    public double getProbabilidade() { return probability; }
+
     public double getProbability() { return probability; }
 }

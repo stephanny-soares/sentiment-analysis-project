@@ -9,18 +9,18 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * Repositório responsável por operações de persistência de análises de sentimento.
- */
 @Repository
 public interface SentimentAnalysisRepository extends JpaRepository<SentimentAnalysis, Long> {
 
-    // Buscar todas as análises de um tipo específico
-    List<SentimentAnalysis> findByPrediction(SentimentType prediction);
-
-    // Buscar análises mais recentes, limitadas
+    // Buscar as 10 análises mais recentes
     List<SentimentAnalysis> findTop10ByOrderByCreatedAtDesc();
 
-    // Consultas paginadas por tipo de sentimento
+    // Contagem para as estatísticas (Ajustado para 'Prediction')
+    long countByPrediction(SentimentType prediction);
+
+    // Buscas por tipo
+    List<SentimentAnalysis> findByPrediction(SentimentType prediction);
+
+    // Consultas paginadas
     Page<SentimentAnalysis> findByPrediction(SentimentType prediction, Pageable pageable);
 }
