@@ -2,16 +2,17 @@ package com.sentiment.backend.service;
 
 import com.sentiment.backend.dto.SentimentRequest;
 import com.sentiment.backend.dto.SentimentResponse;
+import com.sentiment.backend.dto.SentimentStatsResponse;
 import com.sentiment.backend.model.SentimentAnalysis;
 import com.sentiment.backend.model.SentimentType;
 import com.sentiment.backend.repository.SentimentAnalysisRepository;
 import com.sentiment.backend.util.SentimentAnalyzer;
 import com.sentiment.backend.util.SentimentAnalysisResult;
-
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,7 +43,7 @@ public class SentimentService {
         }
 
         // 3️⃣ Cria DTO de resposta (para o Controller)
-        SentimentResponse dto = new SentimentResponse(tipoModel, resultado.getProbability());
+        SentimentResponse dto = new SentimentResponse(tipoModel, resultado.getProbabilidade());
 
         // 4️⃣ Cria entidade e salva no banco
         SentimentAnalysis analysis = new SentimentAnalysis(request, dto);
@@ -64,5 +65,21 @@ public class SentimentService {
      */
     public List<SentimentAnalysis> listarHistorico() {
         return repository.findTop10ByOrderByCreatedAtDesc();
+    }
+
+    /**
+     * Retorna estatísticas de sentimento com quantidade e percentual.
+     */
+    public List<SentimentStatsResponse> gerarEstatisticas() {
+        long total = repository.count();
+
+        List<SentimentStatsResponse> stats = new ArrayList<>();
+        for (SentimentType tipo : SentimentType.values()) {
+            // AQUI ESTAVA O ERRO: Mudamos para countByPrediction para bater com o Repository
+            long quantidade = repository.countByPrediction(tipo);
+            stats.add(new SentimentStatsResponse(tipo, quantidade, (double) total));
+        }
+
+        return stats;
     }
 }
