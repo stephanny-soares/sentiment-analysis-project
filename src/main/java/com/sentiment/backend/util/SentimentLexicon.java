@@ -11,7 +11,7 @@ public class SentimentLexicon {
 
     // Radicais Positivos
     public static final List<String> POSITIVAS = List.of(
-            "bom", "bo", "otim", "excelen", "perfeit", "maravilh", "fantast", "sensacion",
+            "bom", "bem", "otim", "excelen", "perfeit", "maravilh", "fantast", "sensacion",
             "agrad", "satisf", "eficient", "rapid", "impec", "top", "recomend",
             "util", "facil", "legal", "feliz", "vale", "surpreend",
             "atencios", "gentil", "educad", "profissional", "confiavel",

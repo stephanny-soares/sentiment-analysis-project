@@ -16,7 +16,7 @@ public class SentimentAnalyzer {
             );
         }
 
-        // Normalização do texto: lowercase, remoção de acentos e caracteres inválidos
+        // Normalização: lowercase, remoção de acentos e caracteres inválidos
         String normalizedText = Normalizer
                 .normalize(texto.toLowerCase(), Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
@@ -27,26 +27,27 @@ public class SentimentAnalyzer {
         List<String> lemmas = new ArrayList<>();
         for (String p : palavras) lemmas.add(normalizeWord(p));
 
-        // Score final
         double scoreTotal = 0;
-        boolean encontrouAdversativa = false;
+        boolean efeitoAdversativa = false;
 
         for (int i = 0; i < lemmas.size(); i++) {
             String palavra = lemmas.get(i);
 
-            // LOGICA DE PIVÔ: O efeito do "MAS" e similares
+            // 1. LÓGICA DE PIVÔ (MAS, PORÉM, etc.)
             if (SentimentLexicon.ADVERSATIVAS.contains(palavra)) {
-                // Reduz o peso do que veio antes e aumenta a importância do que vem depois
-                scoreTotal *= 0.3;
-                encontrouAdversativa = true;
+                scoreTotal *= 0.3;      // Reduz o impacto do que veio antes
+                efeitoAdversativa = true;
                 continue;
             }
 
-            boolean negacao = i > 0 && SentimentLexicon.NEGACOES.contains(lemmas.get(i - 1));
+            // 2. NEGAÇÃO (até 2 palavras atrás)
+            boolean negacao = (i > 0 && SentimentLexicon.NEGACOES.contains(lemmas.get(i - 1))) ||
+                    (i > 1 && SentimentLexicon.NEGACOES.contains(lemmas.get(i - 2)));
+
+            // 3. INTENSIFICADOR (palavra imediatamente anterior)
             boolean intensificador = i > 0 && SentimentLexicon.INTENSIFICADORES.contains(lemmas.get(i - 1));
 
-            // Peso base da palavra
-            double pesoImportancia = encontrouAdversativa ? 1.5 : 1.0;
+            double pesoImportancia = efeitoAdversativa ? 1.5 : 1.0;
             double pesoBase = (intensificador ? 2.0 : 1.0) * pesoImportancia;
 
             boolean ehPositivo = SentimentLexicon.POSITIVAS.stream().anyMatch(palavra::startsWith);
@@ -80,9 +81,9 @@ public class SentimentAnalyzer {
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
                 .replaceAll("[^a-z]", "");
 
-        if (w.length() <= 3) return w; // palavras curtas ficam intactas
+        if (w.length() <= 3) return w;
 
-        // Remove plural e vogal temática (gênero)
+        // Remove plural e vogal temática
         if (w.endsWith("s")) w = w.substring(0, w.length() - 1);
         if (w.endsWith("a") || w.endsWith("o") || w.endsWith("e")) w = w.substring(0, w.length() - 1);
 
