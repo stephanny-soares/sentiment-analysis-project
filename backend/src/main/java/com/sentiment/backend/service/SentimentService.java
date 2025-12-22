@@ -20,42 +20,46 @@ public class SentimentService {
 
     private static final Logger logger = LoggerFactory.getLogger(SentimentService.class);
     private final SentimentAnalysisRepository repository;
+    private final BusinessRuleService businessRuleService; // <--- NOVA INJEÇÃO
 
-    public SentimentService(SentimentAnalysisRepository repository) {
+    public SentimentService(SentimentAnalysisRepository repository, BusinessRuleService businessRuleService) {
         this.repository = repository;
+        this.businessRuleService = businessRuleService;
     }
 
-    /**
-     * Analisa o texto recebido, salva no banco e retorna o DTO de resposta.
-     */
     public SentimentResponse analisarSentimento(SentimentRequest request) {
-
-        // 1️⃣ Analisa usando SentimentAnalyzer (interno)
+        // 1️⃣ Analisa usando a IA (SentimentAnalyzer interno)
         SentimentAnalysisResult resultado = SentimentAnalyzer.analisar(request.getText());
 
-        // 2️⃣ Converte enum do util para enum do model
-        SentimentType tipoModel;
-        switch (resultado.getType()) {
-            case POSITIVO -> tipoModel = SentimentType.POSITIVO;
-            case NEGATIVO -> tipoModel = SentimentType.NEGATIVO;
-            case NEUTRO -> tipoModel = SentimentType.NEUTRO;
-            default -> tipoModel = SentimentType.NEUTRO;
-        }
+        SentimentType tipoModel = switch (resultado.getType()) {
+            case POSITIVO -> SentimentType.POSITIVO;
+            case NEGATIVO -> SentimentType.NEGATIVO;
+            default -> SentimentType.NEUTRO;
+        };
 
-        // 3️⃣ Cria DTO de resposta (para o Controller)
-        SentimentResponse dto = new SentimentResponse(tipoModel, resultado.getProbabilidade());
+        // 2️⃣ ENRIQUECIMENTO COM REGRAS DE NEGÓCIO (BACK-END)
+        String texto = request.getText();
+        String prioridade = businessRuleService.identificarPrioridade(texto, tipoModel);
+        String setor = businessRuleService.identificarSetor(texto);
+        List<String> tags = businessRuleService.extrairTags(texto);
+        String sugestao = businessRuleService.gerarSugestao(tipoModel, setor);
 
-        // 4️⃣ Cria entidade e salva no banco
+        // 3️⃣ Cria DTO de resposta com TODOS os dados
+        SentimentResponse dto = new SentimentResponse(
+                tipoModel,
+                resultado.getProbabilidade(),
+                prioridade,
+                tags,
+                setor,
+                sugestao
+        );
+
+        // 4️⃣ Salva no banco (Agora a Entity já sabe como lidar com o DTO novo)
         SentimentAnalysis analysis = new SentimentAnalysis(request, dto);
         repository.save(analysis);
 
-        // 5️⃣ Log para monitoramento
-        logger.info("Análise salva: '{}' → {} (score: {}, prob: {})",
-                request.getText(),
-                dto.getPrevisao(),
-                resultado.getScore(),
-                dto.getProbabilidade()
-        );
+        logger.info("Análise Completa: '{}' -> {} | Prioridade: {} | Setor: {}",
+                texto, tipoModel, prioridade, setor);
 
         return dto;
     }
