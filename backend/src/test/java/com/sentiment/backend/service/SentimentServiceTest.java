@@ -10,9 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SentimentServiceTest {
@@ -20,11 +26,23 @@ class SentimentServiceTest {
     @Mock
     private SentimentAnalysisRepository repository;
 
+    @Mock
+    private BusinessRuleService businessRuleService; // <--- ADICIONE ESTE MOCK
+
     @InjectMocks
     private SentimentService service;
 
+    private void configurarMocksDeNegocio(SentimentType tipo) {
+        // Configura comportamentos padrão para o motor de regras não retornar null nos testes
+        when(businessRuleService.identificarPrioridade(anyString(), any())).thenReturn("NORMAL");
+        when(businessRuleService.identificarSetor(anyString())).thenReturn("GERAL");
+        when(businessRuleService.extrairTags(anyString())).thenReturn(Collections.emptyList());
+        when(businessRuleService.gerarSugestao(any(), anyString())).thenReturn("Sugestão de teste");
+    }
+
     @Test
     void deveRetornarSentimentoPositivo() {
+        configurarMocksDeNegocio(SentimentType.POSITIVO);
         SentimentRequest request = new SentimentRequest("Hoje o dia foi muito bom!");
 
         SentimentResponse response = service.analisarSentimento(request);
@@ -34,6 +52,7 @@ class SentimentServiceTest {
 
     @Test
     void deveRetornarSentimentoNegativo() {
+        configurarMocksDeNegocio(SentimentType.NEGATIVO);
         SentimentRequest request = new SentimentRequest("O filme não foi bom");
 
         SentimentResponse response = service.analisarSentimento(request);
@@ -43,6 +62,7 @@ class SentimentServiceTest {
 
     @Test
     void deveRetornarSentimentoNeutro() {
+        configurarMocksDeNegocio(SentimentType.NEUTRO);
         SentimentRequest request = new SentimentRequest("A reunião foi normal");
 
         SentimentResponse response = service.analisarSentimento(request);
