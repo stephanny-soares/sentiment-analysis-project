@@ -3,17 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis API | Dashboard</title>
+    <title>Sentiment Analysis API | Dashboard Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .critical-pulse { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-[Inter]">
+<body class="bg-slate-50 text-slate-800">
 
     <div class="min-h-screen flex flex-col">
         <header class="bg-white border-b border-slate-200 p-4 shadow-sm">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
-                <h1 class="text-2xl font-bold text-indigo-600">Sentiment Analysis <span class="text-slate-900">API</span></h1>
+                <h1 class="text-2xl font-bold text-indigo-600">Sentiment Analysis <span class="text-slate-900">PRO</span></h1>
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     <span class="text-sm font-medium text-slate-500">Sistema Online</span>
@@ -27,28 +36,44 @@
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h2 class="text-lg font-semibold mb-4 text-slate-700 font-bold">💬 Analisador de Feedbacks</h2>
-                        <textarea id="textInput" class="w-full h-40 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg" placeholder="Digite o comentário do cliente..."></textarea>
+                        <textarea id="textInput" class="w-full h-40 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg transition-all" placeholder="Digite o comentário do cliente..."></textarea>
                         
                         <div class="flex justify-between items-center mt-4">
-                            <p class="text-xs text-slate-400 font-medium">Mínimo 4 caracteres.</p>
+                            <p class="text-xs text-slate-400 font-medium">Análise inteligente com priorização de atendimento.</p>
                             <button onclick="analisar()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg active:scale-95">Analisar Sentimento</button>
                         </div>
 
-                        <div id="resultCard" class="hidden mt-8 p-6 rounded-2xl border-2 flex items-center justify-between transition-all">
-                            <div>
-                                <p class="text-xs uppercase tracking-widest font-black opacity-60 mb-1">Resultado da IA</p>
-                                <h3 id="predictionText" class="text-3xl font-black italic">---</h3>
+                        <div id="resultCard" class="hidden mt-8 p-6 rounded-2xl border-2 transition-all">
+                            <div class="flex justify-between items-start mb-6">
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest font-black opacity-60 mb-1">Resultado da IA</p>
+                                    <h3 id="predictionText" class="text-3xl font-black italic">---</h3>
+                                    <span id="sectorBadge" class="mt-2 inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase bg-white/50 border border-black/5"></span>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs uppercase tracking-widest font-black opacity-60 mb-1">Prioridade</p>
+                                    <h3 id="priorityText" class="text-2xl font-black uppercase">---</h3>
+                                    <p id="confidenceText" class="text-xs font-bold opacity-70">Confiança: 0%</p>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <p class="text-xs uppercase tracking-widest font-black opacity-60 mb-1">Confiança</p>
-                                <h3 id="confidenceText" class="text-3xl font-black">0%</h3>
+
+                            <div class="border-t border-black/10 pt-4 mt-4">
+                                <div class="mb-4">
+                                    <p class="text-[10px] uppercase font-black mb-2 opacity-50 italic">Tags Identificadas</p>
+                                    <div id="tagsContainer" class="flex flex-wrap gap-2"></div>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-[10px] uppercase font-black mb-1 opacity-50 italic">Sugestão de Resposta Automática</p>
+                                    <div class="bg-white/40 p-4 rounded-xl border border-black/5 italic text-sm leading-relaxed" id="suggestionText"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h2 class="text-lg font-semibold mb-6 text-slate-700 font-bold">📊 Estatísticas</h2>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-fit">
+                    <h2 class="text-lg font-semibold mb-6 text-slate-700 font-bold">📊 Estatísticas Gerais</h2>
                     <div class="relative h-64 mb-6">
                         <canvas id="sentimentChart"></canvas>
                     </div>
@@ -57,17 +82,17 @@
 
             <div class="max-w-6xl mx-auto mt-8">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h2 class="text-lg font-semibold mb-4 text-slate-700 font-bold">📜 Histórico Recente</h2>
+                    <h2 class="text-lg font-semibold mb-4 text-slate-700 font-bold">📜 Histórico de Atendimento</h2>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full text-left border-separate border-spacing-y-2">
                             <thead>
-                                <tr class="border-b border-slate-100 text-slate-400 text-sm uppercase font-bold">
-                                    <th class="py-3 px-2">Comentário</th>
-                                    <th class="py-3 px-2 text-right">Sentimento</th>
+                                <tr class="text-slate-400 text-[10px] uppercase font-black tracking-widest">
+                                    <th class="pb-3 px-4">Comentário / Setor</th>
+                                    <th class="pb-3 px-4 text-center">Prioridade</th>
+                                    <th class="pb-3 px-4 text-right">Sentimento</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyBody" class="text-sm">
-                                </tbody>
+                            <tbody id="historyBody" class="text-sm"></tbody>
                         </table>
                     </div>
                 </div>
@@ -94,47 +119,88 @@
                 });
 
                 const data = await response.json();
-                console.log("Dados recebidos:", data); // Para debugar no F12
 
                 if (response.ok) {
-                    resCard.classList.remove('hidden', 'bg-green-50', 'bg-red-50', 'bg-yellow-50', 'text-green-700', 'text-red-700', 'text-yellow-700', 'border-green-200', 'border-red-200', 'border-yellow-200');
+                    resCard.classList.remove('hidden', 'bg-green-50', 'bg-red-50', 'bg-yellow-50', 'text-green-700', 'text-red-700', 'text-yellow-700', 'border-green-200', 'border-red-200', 'border-yellow-200', 'critical-pulse');
                     
-                    // Ajuste aqui: data.previsao OU data.prediction
-                    const previsao = data.previsao || data.prediction;
-                    const probabilidade = data.probabilidade || data.confidence || 0;
+                    const previsao = data.prediction;
+                    const prioridade = data.prioridade;
+                    const tags = data.tags || [];
+                    const setor = data.setor;
 
                     let style = 'bg-yellow-50 border-yellow-200 text-yellow-700';
                     if (previsao === 'POSITIVO') style = 'bg-green-50 border-green-200 text-green-700';
                     if (previsao === 'NEGATIVO') style = 'bg-red-50 border-red-200 text-red-700';
 
                     resCard.classList.add(...style.split(' '));
+                    if (prioridade === 'CRÍTICA') resCard.classList.add('critical-pulse');
+
                     document.getElementById('predictionText').innerText = previsao;
-                    document.getElementById('confidenceText').innerText = (probabilidade * 100).toFixed(1) + '%';
+                    document.getElementById('priorityText').innerText = prioridade;
+                    document.getElementById('sectorBadge').innerText = "SETOR: " + setor;
+                    document.getElementById('confidenceText').innerText = "Confiança: " + (data.confidence * 100).toFixed(1) + '%';
+                    document.getElementById('suggestionText').innerText = `"${data.sugestaoResposta}"`;
+
+                    const tagsContainer = document.getElementById('tagsContainer');
+                    tagsContainer.innerHTML = tags.length > 0 
+                        ? tags.map(tag => `<span class="bg-black/10 px-2 py-1 rounded text-[10px] font-black tracking-tighter">#${tag.toUpperCase()}</span>`).join('')
+                        : '<span class="text-[10px] opacity-40 italic font-bold">Sem tags</span>';
+
+                    resCard.classList.remove('hidden');
                     
-                    // Adiciona ao histórico visual
-                    adicionarAoHistorico(text, previsao);
+                    adicionarAoHistorico(text, previsao, setor, prioridade);
                     atualizarDashboard();
                     textInput.value = '';
                 }
             } catch (err) { alert("Erro de conexão!"); }
         }
 
-        function adicionarAoHistorico(texto, previsao) {
+        function adicionarAoHistorico(texto, previsao, setor, prioridade) {
             const table = document.getElementById('historyBody');
+            
+            // Cores baseadas no sentimento para a linha do histórico
+            let rowStyle = "bg-yellow-50/50 border-yellow-100";
+            let textColor = "text-yellow-800";
+            let dotColor = "bg-yellow-400";
+
+            if (previsao === 'POSITIVO') {
+                rowStyle = "bg-green-50/50 border-green-100";
+                textColor = "text-green-800";
+                dotColor = "bg-green-400";
+            } else if (previsao === 'NEGATIVO') {
+                rowStyle = "bg-red-50/50 border-red-100";
+                textColor = "text-red-800";
+                dotColor = "bg-red-400";
+            }
+
+            const prioridadeStyle = prioridade === 'CRÍTICA' ? 'bg-red-600 text-white shadow-sm' : 'bg-slate-200 text-slate-600';
+            
             const row = `
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <td class="py-3 px-2 text-slate-600 truncate max-w-md">${texto}</td>
-                    <td class="py-3 px-2 text-right font-bold">${previsao}</td>
+                <tr class="border ${rowStyle} transition-all hover:scale-[1.01]">
+                    <td class="py-4 px-4 rounded-l-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2 h-2 rounded-full ${dotColor}"></div>
+                            <div>
+                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-white/80 border border-black/5 text-slate-500 mb-1 inline-block uppercase tracking-tighter">${setor}</span>
+                                <p class="text-slate-700 font-medium line-clamp-1 max-w-md">${texto}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4 text-center">
+                        <span class="px-2 py-1 rounded text-[10px] font-black ${prioridadeStyle}">${prioridade}</span>
+                    </td>
+                    <td class="py-4 px-4 text-right rounded-r-xl">
+                        <span class="font-black italic tracking-tighter ${textColor}">${previsao}</span>
+                    </td>
                 </tr>
             `;
-            table.innerHTML = row + table.innerHTML; // Adiciona no topo
+            table.innerHTML = row + table.innerHTML;
         }
 
         async function atualizarDashboard() {
             try {
                 const res = await fetch(`${API_BASE}/stats`);
                 const stats = await res.json();
-                
                 const labels = stats.map(s => s.tipo);
                 const values = stats.map(s => s.quantidade);
 
@@ -150,12 +216,16 @@
                             borderWidth: 0
                         }]
                     },
-                    options: { maintainAspectRatio: false, cutout: '70%' }
+                    options: { 
+                        maintainAspectRatio: false, 
+                        cutout: '80%',
+                        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { weight: 'bold', size: 10 } } } }
+                    }
                 });
             } catch (err) { console.error(err); }
         }
 
-        atualizarDashboard();
+        window.onload = atualizarDashboard;
     </script>
 </body>
 </html>
