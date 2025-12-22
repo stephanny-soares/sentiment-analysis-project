@@ -4,10 +4,8 @@ import com.sentiment.backend.dto.SentimentRequest;
 import com.sentiment.backend.dto.SentimentResponse;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * Entidade que representa uma análise de sentimento persistida no banco.
- */
 @Entity
 @Table(name = "sentiment_analysis")
 public class SentimentAnalysis {
@@ -26,32 +24,31 @@ public class SentimentAnalysis {
     @Column(nullable = false)
     private Double confidence;
 
+    private String prioridade;
+    private String setor;
+    private String sugestaoResposta;
+
+    @ElementCollection // Cria uma tabela auxiliar para as tags automaticamente
+    @CollectionTable(name = "sentiment_tags", joinColumns = @JoinColumn(name = "analysis_id"))
+    @Column(name = "tag")
+    private List<String> tags;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public SentimentAnalysis() {}
 
     /**
-     * Construtor principal.
-     * @param text Texto analisado
-     * @param prediction Tipo de sentimento
-     * @param confidence Probabilidade/confiança da análise
-     */
-    public SentimentAnalysis(String text, SentimentType prediction, Double confidence) {
-        this.text = text;
-        this.prediction = prediction;
-        this.confidence = confidence;
-    }
-
-    /**
-     * Construtor a partir de DTOs (facilita persistência no banco)
-     * @param request DTO de requisição
-     * @param response DTO de resposta
+     * Construtor atualizado para aceitar o DTO com as novas inteligências
      */
     public SentimentAnalysis(SentimentRequest request, SentimentResponse response) {
         this.text = request.getText();
-        this.prediction = response.getPrevisao(); // já é enum SentimentType
+        this.prediction = response.getPrevisao();
         this.confidence = response.getProbabilidade();
+        this.prioridade = response.getPrioridade();
+        this.setor = response.getSetor();
+        this.sugestaoResposta = response.getSugestaoResposta();
+        this.tags = response.getTags();
     }
 
     @PrePersist
@@ -65,9 +62,8 @@ public class SentimentAnalysis {
     public SentimentType getPrediction() { return prediction; }
     public Double getConfidence() { return confidence; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-
-    // Setters (somente se necessário)
-    public void setText(String text) { this.text = text; }
-    public void setPrediction(SentimentType prediction) { this.prediction = prediction; }
-    public void setConfidence(Double confidence) { this.confidence = confidence; }
+    public String getPrioridade() { return prioridade; }
+    public String getSetor() { return setor; }
+    public String getSugestaoResposta() { return sugestaoResposta; }
+    public List<String> getTags() { return tags; }
 }
