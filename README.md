@@ -1,10 +1,17 @@
 # Sentiment Analysis System - Marketing & CX Insights
 
-Uma solução Full Stack para monitoramento de feedbacks em escala. O sistema integra um motor de análise de sentimentos a um dashboard gerencial, focado em transformar comentários brutos em dados prontos para a tomada de decisão em Customer Experience (CX).
+Uma solução Full Stack de nível empresarial para monitoramento de feedbacks. O sistema integra inteligência artificial a um **Motor de Regras de Negócio (Business Intelligence)** para transformar comentários brutos em decisões estratégicas de Customer Experience (CX).
 
 ## Visão Estratégica
 
-Este repositório centraliza toda a esteira de dados: desde o processamento de texto com NLP no Back-end até a visualização simplificada no Front-end. O objetivo é eliminar a análise manual de feedbacks, extraindo automaticamente a percepção do cliente sobre a marca de forma ágil e padronizada.
+Diferente de classificadores simples, esta solução realiza a triagem automática e priorização de atendimentos. O sistema identifica não apenas o "clima" do cliente, mas também a urgência operacional e o setor responsável, reduzindo drasticamente o tempo de resposta (SLA) para casos críticos.
+
+---
+
+## Estrutura do Projeto
+- **/backend**: API REST robusta em Java/Spring Boot com motor de regras integrado.
+- **/frontend**: Dashboard interativo com Tailwind CSS e sinalização visual de urgência.
+- **/ds**: Pipeline de Data Science (Python/Scikit-Learn) para classificação de sentimentos.
 
 ---
 
@@ -21,19 +28,38 @@ sentiment-analysis-project/
 
 ## Tecnologias e Diferenciais
 
-### Back-end (Java 17 + Spring Boot 3)
+### Back-end (Inteligência de Negócio)
+- **Priorização Automática**: Identifica menções a órgãos de defesa do consumidor (Procon) ou termos jurídicos, elevando o status para **Prioridade Crítica** instantaneamente.
+- **Categorização por Setores**: Classifica os feedbacks entre Logística, Financeiro, Produto ou Atendimento via mapeamento de palavras-chave.
+- **Extração de Tags**: Gera metadados (#ATRASO, #ESTORNO) para análises de causa raiz.
+- **Sugestão de Resposta**: Engine que gera templates de resposta baseados no sentimento e setor, agilizando o trabalho do atendente.
 
-- Motor de análise híbrido com:
-  - tratamento de adversativas (ex: "mas", "porém")
-  - radicalização de termos (stemming)
-  - inversão de polaridade em frases com negação
-- Persistência em banco H2, voltada para agilidade no MVP
-- Configuração de CORS para integração com aplicações web
+### Front-end (Dashboard Gerencial)
+- **Sinalização Visual**: Alerta pulsante para casos críticos e cards coloridos por sentimento.
+- **Estatísticas em Tempo Real**: Gráficos dinâmicos de distribuição de satisfação via Chart.js.
+- **Histórico Inteligente**: Visualização organizada por contexto de setor e urgência.
 
-### Front-end (HTML5 + Tailwind CSS)
+### API Endpoints
+```plaitext
+ POST `/sentiment`
+```
+Analisa um texto e retorna o enriquecimento completo de dados.
+**Exemplo de Resposta:**
+```json
+{
+  "prediction": "NEGATIVO",
+  "confidence": 0.98,
+  "prioridade": "CRÍTICA",
+  "setor": "LOGÍSTICA",
+  "tags": ["entrega", "atraso", "procon"],
+  "sugestaoResposta": "Lamentamos o transtorno com a entrega. Vamos verificar com a transportadora agora mesmo."
+}
+```
+```plaitext
+GET /sentiment/stats
+```
+· Retorna métricas consolidadas para o dashboard.
 
-- Interface simples e funcional, focada em leitura rápida dos resultados
-- Integração direta com a API REST via Fetch API
 
 ### Data Science (Python + Scikit-Learn)
 
