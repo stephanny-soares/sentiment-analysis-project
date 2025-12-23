@@ -54,7 +54,7 @@ public class SentimentService {
                 sugestao
         );
 
-        // 4️⃣ Salva no banco (Agora a Entity já sabe como lidar com o DTO novo)
+        // 4️⃣ Salva no banco 
         SentimentAnalysis analysis = new SentimentAnalysis(request, dto);
         repository.save(analysis);
 
@@ -79,7 +79,6 @@ public class SentimentService {
 
         List<SentimentStatsResponse> stats = new ArrayList<>();
         for (SentimentType tipo : SentimentType.values()) {
-            // AQUI ESTAVA O ERRO: Mudamos para countByPrediction para bater com o Repository
             long quantidade = repository.countByPrediction(tipo);
             stats.add(new SentimentStatsResponse(tipo, quantidade, (double) total));
         }
