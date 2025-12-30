@@ -1,17 +1,23 @@
 # Sentiment Analysis System - Marketing & CX Insights
 
-Uma solução Full Stack de nível empresarial para monitoramento de feedbacks. O sistema integra inteligência artificial a um **Motor de Regras de Negócio (Business Intelligence)** para transformar comentários brutos em decisões estratégicas de Customer Experience (CX).
+Uma solução Full Stack Enterprise para monitoramento de feedbacks. O sistema integra modelos de Machine Learning (Python) a um Motor de Regras de Negócio (Java/Spring Boot) via comunicação REST, transformando comentários brutos em decisões estratégicas de Customer Experience (CX).
 
-## Visão Estratégica
+## Diferencial Técnico: Arquitetura Híbrida
 
-Diferente de classificadores simples, esta solução realiza a triagem automática e priorização de atendimentos. O sistema identifica não apenas o "clima" do cliente, mas também a urgência operacional e o setor responsável, reduzindo drasticamente o tempo de resposta (SLA) para casos críticos.
+Diferentemente de classificadores de sentimento isolados, este sistema:
+
+- Centraliza a inteligência de negócio no back-end
+- Automatiza a priorização de atendimentos críticos
+- Reduz o tempo de resposta (SLA) para casos sensíveis
+- Permite análises históricas e métricas de satisfação
+- Suporta integração com dashboards gerenciais
 
 ---
 
 ## Estrutura do Projeto
-- **/backend**: API REST robusta em Java/Spring Boot com motor de regras integrado.
-- **/frontend**: Dashboard interativo com Tailwind CSS e sinalização visual de urgência.
-- **/ds**: Pipeline de Data Science (Python/Scikit-Learn) para classificação de sentimentos.
+- **/backend**: API REST em Java/Spring Boot com motor de regras, persistência e integração com o serviço de IA.
+- **/frontend**: Dashboard gerencial com sinalização visual de urgência e indicadores de sentimento.
+- **/ai_models**: Microserviço em Python/Flask responsável pela inferência dos modelos de Machine Learning.
 
 ---
 
@@ -19,56 +25,78 @@ Diferente de classificadores simples, esta solução realiza a triagem automáti
 ```plaintext
 sentiment-analysis-project/
 ├── backend/        API REST e Motor de Análise (Java/Spring Boot)
-├── frontend/       Interface de Usuário e Dashboard (HTML/Tailwind)
-├── ds/             Modelos de Machine Learning e Processamento de Dados
-├── data/           Datasets de Treino e Validação
-└── docs/           Documentação Técnica e Especificações
+├── frontend/       Dashboard Web (HTML / Tailwind CSS)
+└── ai_models/      API Flask e Modelos Preditivos (.pkl)
 ```
 ---
 
 ## Tecnologias e Diferenciais
 
-### Back-end (Inteligência de Negócio)
-- **Priorização Automática**: Identifica menções a órgãos de defesa do consumidor (Procon) ou termos jurídicos, elevando o status para **Prioridade Crítica** instantaneamente.
-- **Categorização por Setores**: Classifica os feedbacks entre Logística, Financeiro, Produto ou Atendimento via mapeamento de palavras-chave.
-- **Extração de Tags**: Gera metadados (#ATRASO, #ESTORNO) para análises de causa raiz.
-- **Sugestão de Resposta**: Engine que gera templates de resposta baseados no sentimento e setor, agilizando o trabalho do atendente.
+### Inteligência Artificial (Python)
+- Modelos de Machine Learning treinados com scikit-learn
+- Processamento de linguagem natural (NLP)
+- API Flask atuando como servidor de inferência
+- Comunicação via HTTP REST
 
-### Front-end (Dashboard Gerencial)
-- **Sinalização Visual**: Alerta pulsante para casos críticos e cards coloridos por sentimento.
-- **Estatísticas em Tempo Real**: Gráficos dinâmicos de distribuição de satisfação via Chart.js.
-- **Histórico Inteligente**: Visualização organizada por contexto de setor e urgência.
+### Back-end – Inteligência de Negócio (Java)
 
-### API Endpoints
-```plaitext
- POST `/sentiment`
+- Integração REST com o microserviço de IA
+- Aplicação de regras de negócio para:
+  - Priorização automática de feedbacks críticos
+  - Identificação de termos jurídicos ou sensíveis
+  - Classificação por setor (Logística, Financeiro, Produto, Atendimento)
+- Extração automática de tags para análise de causa raiz
+- Geração de sugestões de resposta baseadas em contexto
+- Persistência histórica para auditoria e métricas
+
+### Front-end 
+- Visualização consolidada dos feedbacks analisados
+- Sinalização visual de urgência e sentimento
+- Gráficos estatísticos de distribuição de sentimentos
+- Histórico organizado por setor e nível de prioridade
+
+---
+## API Endpoints
+
+```plaintext
+POST /sentiment
 ```
-Analisa um texto e retorna o enriquecimento completo de dados.
+Analisa um texto e retorna o enriquecimento completo de dados (ML + Motor de Regras).
+
 **Exemplo de Resposta:**
 ```json
 {
   "prediction": "NEGATIVO",
-  "confidence": 0.98,
-  "prioridade": "CRÍTICA",
+  "confidence": 0.85,
+  "prioridade": "ALTA",
   "setor": "LOGÍSTICA",
-  "tags": ["entrega", "atraso", "procon"],
-  "sugestaoResposta": "Lamentamos o transtorno com a entrega. Vamos verificar com a transportadora agora mesmo."
+  "tags": ["atraso", "entrega"],
+  "sugestaoResposta": "Lamentamos o problema com sua entrega. Nossa equipe de logística já foi acionada."
 }
 ```
-```plaitext
-GET /sentiment/stats
+```plaintext
+**GET /sentiment/stats**
 ```
-· Retorna métricas consolidadas para o dashboard.
-
-
-### Data Science (Python + Scikit-Learn)
-
-- Modelo de Machine Learning baseado em TF-IDF + Logistic Regression
-- Classificação automática de sentimentos com foco em precisão e escalabilidade
+· Retorna métricas consolidadas para alimentação do dashboard.
 
 ---
 
+## Data Science (Python + Scikit-Learn)
+
+- **Processamento**: Pipeline baseado em TF-IDF para vetorização de texto.
+- **Algoritmo**: Regressão Logística treinada para classificação automática.
+- **Escalabilidade**: Modelos exportados em formato Joblib (.pkl) para consumo em tempo real via microserviço.
+---
+
 ## Como Executar
+
+### Serviço de IA (Python)
+
+Acesse o diretório ai_models, ative o ambiente virtual e execute o servidor Flask:
+```plaintext
+python app.py
+```
+O serviço estará disponível em http://localhost:5000
 
 ### Back-end
 
@@ -90,21 +118,11 @@ Observação: o back-end deve estar em execução para que a análise de sentime
 
 ---
 
-## Endpoints Principais
-```plaintext
-- POST /sentiment
-  Analisa um texto e retorna a predição de sentimento.
-
-- GET /sentiment/stats
-  Retorna estatísticas consolidadas para uso em dashboards.
-```
----
-
 ## Equipe
 
-- Back-end, Front-end e Integração: Stephanny Soares
+- Back-end, Front-end e Integração: [  ]
 - Data Science: [  ]
 
 ---
 
-#### Tecnologia aplicada à análise de sentimentos para otimização de fluxos de trabalho em Marketing e suporte à decisão em Customer Experience.
+#### Solução orientada à análise de sentimentos para otimização de fluxos de trabalho em Marketing e suporte à decisão em Customer Experience.

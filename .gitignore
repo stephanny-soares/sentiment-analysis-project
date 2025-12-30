@@ -1,35 +1,36 @@
+# --- JAVA & MAVEN ---
 backend/HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+bin/
+build/
+.gradle/
 
-### STS ###
-.apt_generated
+# --- DATA SCIENCE & PYTHON  ---
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.zip
+*.csv
+olist_data/
+
+# --- IDEs (IntelliJ, VS Code, STS) ---
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
 .classpath
-.factorypath
 .project
-.settings
+.settings/
+.factorypath
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-**/.idea/
-*.iws
-*.iml
-**/*.iml
-*.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
+# --- OS ---
+.DS_Store
+Thumbs.db
