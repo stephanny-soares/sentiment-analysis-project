@@ -9,7 +9,7 @@ import com.sentiment.backend.repository.SentimentAnalysisRepository;
 import com.sentiment.backend.util.SentimentAnalyzer;
 import com.sentiment.backend.util.SentimentAnalysisResult;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate; // <--- NOVO IMPORT
+import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,8 @@ public class SentimentService {
     private final BusinessRuleService businessRuleService;
 
     // URL do seu servidor Python que está rodando no terminal
-    private final String PYTHON_URL = "http://localhost:5000/predict/sentiment";
+    private final String PYTHON_URL = "http://192.168.0.17:5000/predict/sentiment";
+    // final String PYTHON_URL = "http://127.0.0.1:5000/predict/sentiment";
 
     public SentimentService(SentimentAnalysisRepository repository, BusinessRuleService businessRuleService) {
         this.repository = repository;
@@ -57,22 +58,21 @@ public class SentimentService {
     public SentimentResponse analisarSentimento(SentimentRequest request) {
         String texto = request.getText();
 
-        // 1️⃣ CHAMA A IA REAL NO PYTHON
         logger.info("Enviando texto para IA Python...");
         int notaIA = chamarIAPython(texto);
         logger.info("IA respondeu com nota: {}", notaIA);
 
-        // Converte a nota 1-5 para o seu ENUM SentimentType
         SentimentType tipoModel;
-        if (notaIA <= 2) {
-            tipoModel = SentimentType.NEGATIVO;
-        } else if (notaIA >= 4) {
-            tipoModel = SentimentType.POSITIVO;
+
+        if (notaIA == 0) {
+            tipoModel = SentimentType.NEGATIVO; // 0 = Ruim no novo modelo
+        } else if (notaIA == 2) {
+            tipoModel = SentimentType.POSITIVO; // 2 = Bom no novo modelo
         } else {
-            tipoModel = SentimentType.NEUTRO;
+            tipoModel = SentimentType.NEUTRO;   // 1 (ou erros) = Neutro
         }
 
-        // 2️⃣ ENRIQUECIMENTO COM REGRAS DE NEGÓCIO (Permanece igual)
+        // 2️⃣ ENRIQUECIMENTO COM REGRAS DE NEGÓCIO
         String prioridade = businessRuleService.identificarPrioridade(texto, tipoModel);
         String setor = businessRuleService.identificarSetor(texto);
         List<String> tags = businessRuleService.extrairTags(texto);
@@ -81,7 +81,7 @@ public class SentimentService {
         // 3️⃣ Cria DTO de resposta
         SentimentResponse dto = new SentimentResponse(
                 tipoModel,
-                0.85, // Probabilidade fixa ou você pode trazer do Python também se quiser
+                0.85, // Probabilidade fixa
                 prioridade,
                 tags,
                 setor,
