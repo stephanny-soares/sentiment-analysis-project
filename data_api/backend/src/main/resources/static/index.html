@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Sentimento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="tabs-bar">
+            <div class="model-tabs">
+                <button class="model-tab active" data-model="auto">🤖 Automático</button>
+                <button class="model-tab" data-model="original">📝 Original</button>
+                <button class="model-tab" data-model="enhanced">🚀 Enhanced</button>
+            </div>
+        </div>
+    <div class="container">
+        
+        <div id="modelNotice" class="model-notice">Modelo automático: só o texto é obrigatório.</div>
+
+        <h1>🔍 Análise de Sentimento</h1>
+
+        <div class="input-group">
+            <label for="textInput">Digite o texto para análise:</label>
+            <textarea
+                id="textInput"
+                placeholder="Exemplo: Este produto é incrível! Estou muito satisfeito com a compra..."
+                maxlength="1000"></textarea>
+        </div>
+
+        <!-- Rating com estrelas -->
+        <div class="input-group" id="ratingSection">
+            <label>Avaliação (Rating):</label>
+            <div class="rating-stars" id="ratingStars">
+                <span class="star" data-rating="1">★</span>
+                <span class="star" data-rating="2">★</span>
+                <span class="star" data-rating="3">★</span>
+                <span class="star" data-rating="4">★</span>
+                <span class="star" data-rating="5">★</span>
+            </div>
+            <small id="ratingText">Clique nas estrelas para avaliar (1-5)</small>
+        </div>
+
+        <!-- Recomendação -->
+        <div class="input-group recommendation-group" id="recommendationSection">
+            <label>Recomendaria a um amigo?</label>
+            <div class="recommendation-options">
+                <label class="recommendation-option" for="recommendYes">
+                    <input type="radio" id="recommendYes" name="recommendation" value="true">
+                    <span>👍 Sim</span>
+                </label>
+                <label class="recommendation-option" for="recommendNo">
+                    <input type="radio" id="recommendNo" name="recommendation" value="false">
+                    <span>👎 Não</span>
+                </label>
+            </div>
+        </div>
+
+        <button id="analyzeBtn" onclick="analyzeSentiment()">
+            📊 Analisar Sentimento
+        </button>
+
+        <div id="loading" class="loading" style="display: none;">
+            Analisando sentimento...
+        </div>
+
+        <div id="result" class="result">
+            <!-- Result will be displayed here -->
+        </div>
+
+        <div class="api-info">
+            <h3>ℹ️ Endpoints Disponíveis</h3>
+            <p><strong>📝 Original:</strong> POST /api/sentiment/predict</p>
+            <p><strong>🚀 Enhanced:</strong> POST /api/sentiment/predict/enhanced</p>
+            <p><strong>🤖 Auto:</strong> POST /api/sentiment/predict/auto</p>
+            <p><strong>Content-Type:</strong> application/json</p>
+            <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                💡 <strong>Dica:</strong> O modelo Enhanced oferece 99% de acurácia usando rating e recomendação!
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

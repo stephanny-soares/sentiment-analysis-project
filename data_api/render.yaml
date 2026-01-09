@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: sentiment-backend
+    env: docker
+    rootDir: backend
+    plan: free
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: SENTIMENT_API_HOST
+        fromService:
+          name: sentiment-api
+          type: web
+          property: host
+      - key: SENTIMENT_API_URL
+        sync: false
+
+  - type: web
+    name: sentiment-api
+    env: docker
+    rootDir: .
+    plan: free
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: "*"
