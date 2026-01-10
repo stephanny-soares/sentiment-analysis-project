@@ -1,59 +1,43 @@
-# Sentiment Analysis System - Marketing & CX Insights
-
-Uma solução Full Stack Enterprise para monitoramento de feedbacks. O sistema integra modelos de Machine Learning (Python) a um Motor de Regras de Negócio (Java/Spring Boot) via comunicação REST, transformando comentários brutos em decisões estratégicas de Customer Experience (CX).
-
-## Diferencial Técnico: Arquitetura Híbrida
-
-Diferentemente de classificadores de sentimento isolados, este sistema:
-
-- Centraliza a inteligência de negócio no back-end
-- Automatiza a priorização de atendimentos críticos
-- Reduz o tempo de resposta (SLA) para casos sensíveis
-- Permite análises históricas e métricas de satisfação
-- Suporta integração com dashboards gerenciais
-
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
+![Spring](https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-005850?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ---
+# Sentiment Analysis System 
 
-## Estrutura do Projeto
-- **/backend**: API REST em Java/Spring Boot com motor de regras, persistência e integração com o serviço de IA.
-- **/frontend**: Dashboard gerencial com sinalização visual de urgência e indicadores de sentimento.
-- **/ai_models**: Microserviço em Python/Flask responsável pela inferência dos modelos de Machine Learning.
+Uma solução Full Stack projetada para transformar feedbacks de clientes em decisões estratégicas. O sistema utiliza uma arquitetura híbrida de microserviços, integrando o poder preditivo do Machine Learning (Python) com a robustez de um Motor de Regras de Negócio (Java/Spring Boot).
 
 ---
 
 ## Estrutura do Repositório
 ```plaintext
 sentiment-analysis-project/
-├── backend/        API REST e Motor de Análise (Java/Spring Boot)
-├── frontend/       Dashboard Web (HTML / Tailwind CSS)
-└── ai_models/      API Flask e Modelos Preditivos (.pkl)
+├── backend/           # API REST + Motor de Regras (Java/Spring Boot)
+├── data_api/          # Microserviço de IA (Python/FastAPI)
+├── frontend/          # Dashboard Administrativo (HTML + Tailwind CSS)
+├── docker-compose.yml # Orquestração dos containers
+└── README.md          # Documentação principal
 ```
 ---
 
-## Tecnologias e Diferenciais
+## Tecnologias 
 
-### Inteligência Artificial (Python)
-- Modelos de Machine Learning treinados com scikit-learn
-- Processamento de linguagem natural (NLP)
-- API Flask atuando como servidor de inferência
-- Comunicação via HTTP REST
+- Backend & Integração (Java)
+  * Spring Boot 3.x: Orquestração da lógica de negócio.
+  * Spring Data JPA: Persistência de dados (H2/MySQL).
+  * RestTemplate: Comunicação síncrona com o serviço de IA.
+  * Motor de Regras: Classificação automática de prioridade (Alta/Média/Baixa) e setor (Logística, Financeiro, etc.)
 
-### Back-end – Inteligência de Negócio (Java)
+- Data Science & ML (Python 3.11)
+  * FastAPI: Servidor de inferência de alta performance.
+  * Scikit-Learn: Pipeline de NLP com TF-IDF e Regressão Logística.
+  * Joblib: Persistência de modelos treinados.
+  * Métricas: 88% de acurácia global com 96% de recall para comentários negativos.
 
-- Integração REST com o microserviço de IA
-- Aplicação de regras de negócio para:
-  - Priorização automática de feedbacks críticos
-  - Identificação de termos jurídicos ou sensíveis
-  - Classificação por setor (Logística, Financeiro, Produto, Atendimento)
-- Extração automática de tags para análise de causa raiz
-- Geração de sugestões de resposta baseadas em contexto
-- Persistência histórica para auditoria e métricas
+- Frontend: HTML, Tailwind CSS;
 
-### Front-end 
-- Visualização consolidada dos feedbacks analisados
-- Sinalização visual de urgência e sentimento
-- Gráficos estatísticos de distribuição de sentimentos
-- Histórico organizado por setor e nível de prioridade
+- DevOps: Docker, Docker Compose;
 
 ---
 ## API Endpoints
@@ -61,9 +45,13 @@ sentiment-analysis-project/
 ```plaintext
 POST /sentiment
 ```
-Analisa um texto e retorna o enriquecimento completo de dados (ML + Motor de Regras).
+Analisa um texto e retorna o objeto enriquecido com classificação, prioridade e contexto.
 
-**Exemplo de Resposta:**
+Exemplo de payload:
+```plaintext
+{"text": "O prazo de entrega não foi cumprido"}
+```
+Exemplo de resposta:
 ```json
 {
   "prediction": "NEGATIVO",
@@ -71,57 +59,78 @@ Analisa um texto e retorna o enriquecimento completo de dados (ML + Motor de Reg
   "prioridade": "ALTA",
   "setor": "LOGÍSTICA",
   "tags": ["atraso", "entrega"],
-  "sugestaoResposta": "Lamentamos o problema com sua entrega. Nossa equipe de logística já foi acionada."
+  "sugestaoResposta": "Lamentamos o problema. Nossa equipe de logística já foi acionada para verificar seu pedido."
 }
 ```
+---
 ```plaintext
-**GET /sentiment/stats**
+GET /sentiment/stats
 ```
 · Retorna métricas consolidadas para alimentação do dashboard.
 
 ---
+# Como Executar
 
-## Data Science (Python + Scikit-Learn)
+O projeto pode ser executado inteiro com Docker, ou localmente por serviço.
 
-- **Processamento**: Pipeline baseado em TF-IDF para vetorização de texto.
-- **Algoritmo**: Regressão Logística treinada para classificação automática.
-- **Escalabilidade**: Modelos exportados em formato Joblib (.pkl) para consumo em tempo real via microserviço.
+### Com Docker (recomendado)
+
+Do diretório raiz do projeto
+```plaintext
+docker-compose up -d
+```
+Serviços disponíveis:
+```plaintext
+Backend: http://localhost:8082
+Python API: http://localhost:5000
+Frontend: http://localhost:8080 (ou abrir frontend/index.html)
+```
+### Python (data_api)
+```plaintext
+cd data_api
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+pip install -r requirements.txt
+python sentiment_api.py
+```
+### Backend (Java/Spring Boot)
+```plaintext
+cd backend
+mvn clean install
+mvn spring-boot:run
+```
+
+### Frontend
+
+Abrir frontend/index.html em navegador moderno (Chrome/Edge/Firefox)
+
 ---
+# Fluxo de Dados (End-to-End)
+- Entrada: O usuário insere um comentário no Frontend.
 
-## Como Executar
+- Processamento ML: O Backend envia o texto para o data_api via POST. A IA devolve a classe ("Positivo", "Negativo" ou "Neutro").
 
-### Serviço de IA (Python)
+- Regras de Negócio: O Backend recebe a classe da IA e aplica:
 
-Acesse o diretório ai_models, ative o ambiente virtual e execute o servidor Flask:
-```plaintext
-python app.py
-```
-O serviço estará disponível em http://localhost:5000
+  * Priorização: Feedbacks negativos geram prioridade "ALTA".
+ 
+  * Categorização: Busca termos-chave para definir o setor responsável.
 
-### Back-end
+  * Sugestão: Gera uma resposta automática baseada no sentimento.
 
-1. Acesse o diretório backend
-2. Execute:
-```bash
-   mvn clean install
-   mvn spring-boot:run
-```
-3. A API estará disponível em:
-```plaintext
-   http://localhost:8082
-```
-### Front-end
-
-Abrir o arquivo frontend/index.html em qualquer navegador moderno.
-
-Observação: o back-end deve estar em execução para que a análise de sentimentos funcione corretamente na interface.
-
+- Saída: Os dados enriquecidos são salvos no banco e exibidos no dashboard.
 ---
 
 ## Equipe
 
-- Back-end, Front-end e Integração: [  ]
-- Data Science: [  ]
+Back-end, Front-end e Integração:
+- https://github.com/stephanny-soares
+- https://github.com/MrClaro
+
+Data Science:
+- https://github.com/emanuelssergio
+- https://github.com/kaio326
 
 ---
 
