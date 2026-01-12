@@ -1,270 +1,236 @@
-# Sentiment Analysis Hackathon Project
+# Sentiment Analysis API - Data Science Module
 
-## 🏁 Como rodar tudo com Docker (passo a passo)
+## 🚀 Instalar dependências e rodar notebooks/APIs
 
-1) **Pré-requisitos**
-  - Docker e Docker Compose instalados
-  - 4GB RAM e 8GB de disco livres
-
-2) **Clonar o repositório**
-  ```bash
-  git clone https://github.com/kaio326/hackathon-nocountry-one-alura.git
-  cd hackathon-nocountry-one-alura
-  ```
-
-3) **Subir todos os serviços**
-  ```bash
-  sudo docker-compose up -d
-  ```
-  Primeira execução leva alguns minutos para baixar imagens, instalar dependências Python, compilar o Spring Boot e preparar volumes.
-
-4) **Verificar se está rodando**
-  ```bash
-  sudo docker-compose ps
-  ```
-  Todos os serviços devem aparecer como "Up".
-
-5) **Testar no frontend**
-  - Abra http://localhost:8080
-  - Informe um texto e clique em "📊 Analisar Sentimento"
-
-6) **Testes rápidos via curl**
-  - Java API (texto):
-  ```bash
-  curl -X POST "http://localhost:8080/api/sentiment/predict" \
-      -H "Content-Type: application/json" \
-      -d '{"text": "Ótimo produto!"}'
-  ```
-  - Enhanced (texto+rating+recomendação):
-  ```bash
-  curl -X POST http://localhost:8000/api/v1/sentiment/predict/enhanced \
-      -H "Content-Type: application/json" \
-      -d '{"text":"Este produto é excelente!","rating":5,"recommend_to_friend":true}'
-  ```
-
-7) **Parar serviços**
-  ```bash
-  sudo docker-compose down
-  ```
-
-8) **Rebuild após mudanças de código**
-  ```bash
-  sudo docker-compose up --build -d
-  ```
-
-## 🎯 Project Overview
-
-A complete sentiment analysis system with:
-- **Machine Learning Model**: TF-IDF + Logistic Regression for sentiment classification
-- **Java API Gateway**: Spring Boot backend providing REST endpoints and validation
-- **Python ML Service**: FastAPI microservice handling AI predictions
-- **Database**: PostgreSQL for data storage
-- **Cache**: Redis for performance optimization
-- **Containerization**: Docker Compose for easy deployment
-
-## 🤖 AI Models
-
-### Available Models
-
-| Model | Features | Algorithm | Accuracy | Use Case |
-|-------|----------|-----------|----------|----------|
-| **Original** | Text only | TF-IDF + Logistic Regression | ~78% | Basic sentiment analysis |
-| **Enhanced** | Text + Rating + Recommendation | TF-IDF + Random Forest | ~99% | Advanced analysis with metadata |
-
-### Model Comparison
-
-The **Enhanced Model** provides significantly better accuracy by incorporating:
-- **Text Analysis**: TF-IDF vectorization of review content
-- **Rating Score**: 1-5 star rating as numerical feature (26% importance)
-- **Recommendation**: Binary feature (would recommend to friend) (30% importance)
-- **Text Length**: Additional contextual information
-
-**Expected Improvement**: 26% accuracy gain, especially for edge cases.
-
-### Training Enhanced Model
+### Ambiente Python
+- Requer Python 3.11+
+- Ambiente virtual recomendado (há um pronto em `tools/sentiment-env`)
 
 ```bash
-# Navigate to notebooks directory
-cd data_science/notebooks
+# ativar ambiente existente
+cd tools/sentiment-env
+source bin/activate
 
-# Run the enhanced model training
+# ou criar outro e instalar deps
+pip install -r ../requirements.txt
+```
+
+### Rodar a API localmente
+```bash
+cd data_science
+python sentiment_api.py   # API original
+# ou
+python enhanced_sentiment_api.py   # API enhanced
+```
+API: http://localhost:5000
+
+### Treinar e executar notebooks
+```bash
+cd data_science/notebooks
 jupyter notebook enhanced_model_training.ipynb
 ```
+Execute todas as células para gerar modelos em `data_science/models/enhanced/`.
 
-This will create improved models in `data_science/models/enhanced/`
+## 🎯 Overview
 
-## � Security Configuration
+- **Model**: Logistic Regression with TF-IDF vectorization
+- **Classes**: Positive, Neutral, Negative (with class balancing for negative detection)
+- **API**: FastAPI with automatic documentation
+- **Performance**: 88% accuracy, 96% negative recall
 
-### Environment Variables
+## 🤖 Available Models
 
-**NEVER commit the `.env` file to version control!** It contains sensitive credentials.
+### Original Model (Default)
+- **Algorithm**: TF-IDF + Logistic Regression
+- **Features**: Text only
+- **Accuracy**: ~88%
+- **Use Case**: Basic sentiment analysis, compatibility
 
-1. **Copy the example file:**
-   ```bash
-   cp .env.example .env
-   ```
+### Enhanced Model (Recommended)
+- **Algorithm**: TF-IDF + Random Forest
+- **Features**: Text + Rating (1-5) + Recommendation (Yes/No) + Text Length
+- **Accuracy**: ~92% (4% improvement)
+- **Use Case**: Advanced analysis with metadata, higher accuracy
 
-2. **Edit `.env` with your secure credentials:**
-   ```bash
-   nano .env  # or your preferred editor
-   ```
+## 📊 Model Comparison
 
-### Production Deployment
+| Feature | Original Model | Enhanced Model |
+|---------|----------------|----------------|
+| **Input Features** | Text only | Text + Rating + Recommendation |
+| **Algorithm** | Logistic Regression | Random Forest |
+| **Accuracy** | 88% | 92% |
+| **Training Time** | Fast | Moderate |
+| **Memory Usage** | Low | Moderate |
+| **API Compatibility** | Full | Extended |
 
-For production, use the secure configuration:
+### When to Use Enhanced Model
+
+The Enhanced Model provides better accuracy by incorporating:
+- **Rating Score**: 1-5 star rating provides direct sentiment signal
+- **Recommendation**: Binary feature (would recommend to friend)
+- **Text Length**: Contextual information about review depth
+- **Combined Analysis**: Multiple signals reduce ambiguity
+
+**Best for**: Production deployments, critical business decisions, detailed analysis.
+
+## 🚀 Running with Docker (Recommended)
+
+The API is containerized and runs as part of the complete Docker Compose setup:
 
 ```bash
-# Copy production environment file
-cp .env.example .env.prod
-# Edit with production credentials
-
-# Deploy with production compose file
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### Security Features Implemented
-
-- ✅ **No hardcoded credentials** - All sensitive data uses environment variables
-- ✅ **Redis authentication** - Redis requires password authentication
-- ✅ **Restricted CORS** - Only allows specific origins
-- ✅ **Input validation** - Text length limits and sanitization
-- ✅ **Error handling** - Generic error messages in production
-- ✅ **Resource limits** - Memory and CPU limits on containers
-- ✅ **No privileged containers** - Security hardening applied
-- ✅ **Secure headers** - HTTP security headers configured
-
-### Security Best Practices
-
-- 🔐 **Change default passwords** before deployment
-- 🚫 **Never expose database ports** in production
-- 🔒 **Use HTTPS** in production environments
-- 📊 **Monitor logs** for suspicious activity
-- 🔄 **Regular updates** of Docker images and dependencies
-
-## 📋 Serviços e Portas
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| **🎨 Web Interface** | http://localhost:8080 | **Interactive sentiment analysis** (recommended) |
-| **Java API** | http://localhost:8080 | **Main API endpoint** (Spring Boot) |
-| **API Info** | http://localhost:8080/ | API overview and endpoints |
-| **API Details** | http://localhost:8080/api | Detailed API information |
-| **🚀 Enhanced API** | http://localhost:8000 | **Advanced sentiment analysis** (FastAPI) |
-| **Enhanced API Docs** | http://localhost:8000/docs | Enhanced API documentation |
-| Python API | http://localhost:5000 | Internal ML service (FastAPI) |
-| API Documentation | http://localhost:5000/docs | Python API docs |
-| pgAdmin | http://localhost:5050 | Database administration |
-| PostgreSQL | localhost:5432 | Database server |
-| Redis | localhost:6379 | Cache server |
-
-## 🎨 Como usar o frontend (mais fácil)
-
-Após rodar `sudo docker-compose up -d`:
-1. Abra http://localhost:8080
-2. Digite um texto e clique em "📊 Analisar Sentimento"
-
-Detalhes de endpoints e APIs: veja [backend/README.md](backend/README.md) e [data_science/README.md](data_science/README.md).
-
-## 🔧 Gerenciamento Docker
-
-**Ver logs:**
-```bash
-sudo docker-compose logs -f [service-name]
-```
-
-**Restart:**
-```bash
-sudo docker-compose restart [service-name]
-```
-
-**Rebuild após mudanças:**
-```bash
-sudo docker-compose up --build -d
-```
-
-**Limpar:**
-```bash
-sudo docker-compose down -v
-```
-
-## 🔧 Troubleshooting
-
-### Common Docker Issues
-
-**Permission denied:**
-```bash
-# Use sudo for Docker commands
+# From project root
 sudo docker-compose up -d
 ```
 
-**Port already in use:**
+API will be available at: http://localhost:5000
+
+## 🛠️ Local Development Setup
+
+If you want to run the API locally for development:
+
+### Prerequisites
+- Python 3.11+
+- Virtual environment (sentiment-env provided)
+
+### Setup Environment
+
+1. **Activate the provided virtual environment**
+   ```bash
+   cd tools/sentiment-env
+   source bin/activate
+   ```
+
+2. **Install dependencies** (if needed)
+   ```bash
+   pip install -r ../requirements.txt
+   ```
+
+### Run the API Locally
+
 ```bash
-sudo lsof -i :8080
-# Stop conflicting services or change ports in docker-compose.yml
+cd data_science
+python sentiment_api.py
 ```
 
-**Build fails:**
+API will start on: http://localhost:5000
+
+## 🧠 Training the Enhanced Model
+
+The Enhanced Model provides better accuracy by using multiple features. To train it:
+
+### Prerequisites
+- Processed dataset (`datasets/reviews_cleaned.json`) - generated by `sentiment_model.ipynb`
+- Jupyter Notebook environment
+
+### Training Steps
+
+1. **Navigate to notebooks directory**
+   ```bash
+   cd notebooks
+   ```
+
+2. **Run the enhanced training notebook**
+   ```bash
+   jupyter notebook enhanced_model_training.ipynb
+   ```
+
+3. **Execute all cells** in the notebook to:
+   - ✅ Load pre-processed data from `reviews_cleaned.json`
+   - ✅ Create TF-IDF features from cleaned text
+   - ✅ Add rating, recommendation, and text length features
+   - ✅ Train Random Forest model with multi-feature approach
+   - ✅ Compare performance vs original model
+   - ✅ Save enhanced models to `models/enhanced/`
+
+### Expected Results
+- **Accuracy**: ~99% (26% improvement over original model)
+- **Feature Importance**: Recommendation (30%), Rating (26%), Text features
+- **Training Time**: ~5-10 minutes
+- **Model Size**: ~50MB (larger than original)
+
+### Enhanced Model Files
+After training, these files will be created:
+```
+models/enhanced/
+├── tfidf_vectorizer.joblib      # TF-IDF for text
+├── rating_scaler.joblib         # Scaler for rating feature
+├── random_forest_model.joblib   # Trained Random Forest
+├── sentiment_mapping.json       # Class mappings
+└── model_metadata.json          # Model information
+```
+
+## 📊 Testando a API Python
+
+Após rodar `python sentiment_api.py` ou `python enhanced_sentiment_api.py`:
+
+**Health Check:**
 ```bash
-sudo docker system prune -a
-sudo docker-compose build --no-cache
+curl http://localhost:5000/health
 ```
 
-**Services not starting:**
+**Predição simples:**
 ```bash
-sudo docker-compose ps
-sudo docker-compose logs [service-name]
+curl -X POST http://localhost:5000/predict \
+     -H "Content-Type: application/json" \
+     -d '{"text": "esse produto e otimo"}'
 ```
 
-**Out of disk space:**
+**Predição enhanced (se disponível):**
 ```bash
-df -h
-sudo docker system prune -a --volumes
+curl -X POST http://localhost:5000/predict/enhanced \
+     -H "Content-Type: application/json" \
+     -d '{"text":"esse produto e otimo","rating":5,"recommend_to_friend":true}'
 ```
 
-## 📁 Project Structure
+**Documentação interativa:**  
+http://localhost:5000/docs
+
+## 📁 Directory Structure
 
 ```
-├── data_science/          # ML models and training code
-│   ├── models/           # Trained models and vectorizers
-│   ├── datasets/         # Training data
-│   ├── notebooks/        # Jupyter notebooks for training
-│   └── sentiment_api.py  # FastAPI microservice
-├── backend/              # Java Spring Boot API gateway
-│   ├── src/              # Java source code
-│   ├── resources/        # Application properties
-│   ├── Dockerfile        # Java container configuration
-│   └── pom.xml           # Maven dependencies
-├── docker-compose.yml    # Container orchestration
-├── Dockerfile           # Python API container configuration
-└── requirements.txt     # Python dependencies
+data_science/
+├── models/                 # Trained models and metadata
+│   ├── tfidf_vectorizer.joblib
+│   ├── logistic_regression_model.joblib
+│   ├── sentiment_mapping.json
+│   └── model_metadata.json
+├── datasets/              # Training data
+│   ├── reviews_cleaned.json
+│   └── reviews.json
+├── notebooks/             # Jupyter notebooks for training
+│   ├── training_model.ipynb
+│   └── sentiment_model.ipynb
+├── tools/                 # Development tools
+│   ├── convert_dataset.py
+│   └── sentiment-env/     # Virtual environment
+├── sentiment_api.py       # FastAPI application
+├── requirements.txt       # Python dependencies
+└── README.md             # This file
 ```
 
-## � Documentação dos módulos
+## 🧠 Model Details
 
-- [Backend Java (Spring Boot)](backend/README.md) - Endpoints e execução local
-- [Data Science (Python ML)](data_science/README.md) - Modelos, notebooks, APIs Python
+### Training Configuration
+- **Vectorizer**: TF-IDF with max 1000 features, unigrams + bigrams
+- **Model**: Logistic Regression with custom class weights
+- **Class Weights**: {Negative: 5.0, Neutral: 1.0, Positive: 1.0}
+- **Optimization**: Focused on negative comment detection
 
-## 🛠️ Development Setup (opcional)
+### Performance Metrics
+- Accuracy: 88%
+- Precision: 92%
+- Recall (Negative): 96%
+- F1-Score: 84%
+- AUC: 95.6%
 
-Para rodar componentes individualmente fora do Docker:
-- Python: veja [data_science/README.md](data_science/README.md)
-- Java: veja [backend/README.md](backend/README.md)
+##  API Endpoints
 
-## 📊 Model Performance
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | API information |
+| GET | `/health` | Health check |
+| GET | `/docs` | Interactive documentation |
+| POST | `/predict` | Single text prediction |
+| POST | `/predict_bulk` | Multiple texts prediction |
 
-- **Accuracy**: ~88%
-- **Negative Recall**: 96% (optimized for negative comment detection)
-- **Classes**: Positive, Neutral, Negative
-- **Features**: TF-IDF with 1000 features, bigrams included
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with Docker
-5. Submit a pull request
-
-## 📄 License
-
-This project is part of the 2025 Oracle/Alura/NoCountry Hackathon.
+## 🐛 Troubleshooting
