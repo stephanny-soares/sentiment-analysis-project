@@ -15,7 +15,7 @@ public interface SentimentAnalysisRepository extends JpaRepository<SentimentAnal
     // Buscar as 10 análises mais recentes
     List<SentimentAnalysis> findTop10ByOrderByCreatedAtDesc();
 
-    // Contagem para as estatísticas (Ajustado para 'Prediction')
+    // Contagem para as estatísticas
     long countByPrediction(SentimentType prediction);
 
     // Buscas por tipo

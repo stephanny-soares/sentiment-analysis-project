@@ -24,7 +24,6 @@ public class SentimentService {
     private final SentimentAnalysisRepository repository;
     private final BusinessRuleService businessRuleService;
 
-    // URL da API Python no Docker
     private static final String PYTHON_URL = "http://python-api:5000/predict";
 
     public SentimentService(SentimentAnalysisRepository repository, BusinessRuleService businessRuleService) {
@@ -32,10 +31,6 @@ public class SentimentService {
         this.businessRuleService = businessRuleService;
     }
 
-    /**
-     * Chama a API Python para análise de sentimento.
-     * Retorna "Positivo", "Negativo" ou "Neutro" como fallback.
-     */
     private String chamarIAPython(String texto) {
         try {
             RestTemplate restTemplate = new RestTemplate();
