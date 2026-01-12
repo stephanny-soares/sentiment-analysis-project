@@ -28,7 +28,7 @@ public class SentimentAnalysis {
     private String setor;
     private String sugestaoResposta;
 
-    @ElementCollection // Cria uma tabela auxiliar para as tags automaticamente
+    @ElementCollection
     @CollectionTable(name = "sentiment_tags", joinColumns = @JoinColumn(name = "analysis_id"))
     @Column(name = "tag")
     private List<String> tags;
@@ -38,9 +38,6 @@ public class SentimentAnalysis {
 
     public SentimentAnalysis() {}
 
-    /**
-     * Construtor atualizado para aceitar o DTO com as novas inteligências
-     */
     public SentimentAnalysis(SentimentRequest request, SentimentResponse response) {
         this.text = request.getText();
         this.prediction = response.getPrevisao();
