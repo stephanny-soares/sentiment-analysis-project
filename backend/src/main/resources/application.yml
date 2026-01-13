@@ -1,0 +1,195 @@
+# ============================================
+# Application Configuration
+# ============================================
+spring:
+  application:
+    name: Sentiment Analysis Backend
+
+  # Database - H2
+  datasource:
+    url: jdbc:h2:mem:sentimentdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # H2 Console
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # JPA/Hibernate
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # Jackson JSON
+  jackson:
+    serialization:
+      indent-output: true
+      write-dates-as-timestamps: false
+    time-zone: America/Sao_Paulo
+
+# ============================================
+# Server Configuration
+# ============================================
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# ============================================
+# CORS Configuration
+# ============================================
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+
+# ============================================
+# OpenAPI/Swagger
+# ============================================
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    filter: true
+    display-request-duration: true
+
+# ============================================
+# Actuator
+# ============================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# ============================================
+# Application Info
+# ============================================
+app:
+  version: 1.0.0
+
+info:
+  app:
+    name: Sentiment Analysis Backend
+    description: API de análise de sentimento com IA e regras de negócio
+    version: 1.0.0
+    team: EquipeONE
+
+# ============================================
+# Logging
+# ============================================
+logging:
+  level:
+    root: INFO
+    com.sentiment.backend: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# ============================================
+# Business Rules Configuration
+# ============================================
+business-rules:
+  critical-alerts:
+    - procon
+    - justiça
+    - advogado
+    - processar
+    - reclame aqui
+    - polícia
+    - revoltado
+    - juridico
+    - urgente
+    - imediatamente
+
+  sectors:
+    LOGÍSTICA:
+      keywords:
+        - entrega
+        - atraso
+        - prazo
+        - correios
+        - chegou
+        - frete
+        - envio
+        - transportadora
+
+    FINANCEIRO:
+      keywords:
+        - preço
+        - valor
+        - pagamento
+        - boleto
+        - estorno
+        - caro
+        - cartão
+        - desconto
+
+    PRODUTO:
+      keywords:
+        - qualidade
+        - quebrado
+        - estragado
+        - defeito
+        - material
+        - tamanho
+        - embalagem
+
+    ATENDIMENTO:
+      keywords:
+        - suporte
+        - atendente
+        - demora
+        - responder
+        - chat
+        - telefone
+        - atendimento
+        - ligação
+        - educação
+
+  response-templates:
+    GERAL:
+      positivo: "Agradecemos o feedback positivo! Ficamos felizes em poder ajudar."
+      neutro: "Obrigado pelo seu comentário. Estamos à disposição para esclarecer dúvidas."
+      negativo: "Sentimos muito pela sua experiência. Um atendente especializado entrará em contato."
+
+    LOGÍSTICA:
+      positivo: "Que bom que a entrega foi satisfatória! Obrigado pelo feedback."
+      neutro: "Recebemos sua mensagem sobre a entrega. Como podemos ajudar?"
+      negativo: "Lamentamos o transtorno com a entrega. Vamos verificar com a transportadora imediatamente."
+
+    FINANCEIRO:
+      positivo: "Agradecemos por nos escolher! Estamos sempre buscando as melhores condições."
+      neutro: "Recebemos sua mensagem sobre questões financeiras. Podemos esclarecer algo?"
+      negativo: "Sentimos muito pelo problema financeiro. Por favor, envie o comprovante para nosso setor de estorno."
+
+    PRODUTO:
+      positivo: "Ficamos felizes que você gostou do produto! Obrigado pela confiança."
+      neutro: "Obrigado por compartilhar sua opinião sobre o produto."
+      negativo: "Pedimos desculpas pelo problema com o produto. Vamos avaliar uma troca ou reembolso."
+
+    ATENDIMENTO:
+      positivo: "Que ótimo saber que nosso atendimento foi satisfatório! Obrigado!"
+      neutro: "Obrigado pelo feedback sobre nosso atendimento. Como podemos melhorar?"
+      negativo: "Lamentamos a experiência negativa. Um supervisor entrará em contato em breve."
