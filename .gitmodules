@@ -1,0 +1,3 @@
+[submodule "data-analysis-api"]
+	path = data-analysis-api
+	url = https://github.com/kaio326/sentiment-analysis-api.git
