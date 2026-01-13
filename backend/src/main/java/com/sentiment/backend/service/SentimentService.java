@@ -3,120 +3,118 @@ package com.sentiment.backend.service;
 import com.sentiment.backend.dto.SentimentRequest;
 import com.sentiment.backend.dto.SentimentResponse;
 import com.sentiment.backend.dto.SentimentStatsResponse;
+import com.sentiment.backend.mapper.SentimentAnalysisMapper;
 import com.sentiment.backend.model.SentimentAnalysis;
 import com.sentiment.backend.model.SentimentType;
 import com.sentiment.backend.repository.SentimentAnalysisRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class SentimentService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SentimentService.class);
+  private static final String PYTHON_URL = "http://python-api:5000/predict";
+  private static final double CONFIDENCE_DEFAULT = 0.85;
 
-    private final SentimentAnalysisRepository repository;
-    private final BusinessRuleService businessRuleService;
+  private final SentimentAnalysisRepository repository;
+  private final BusinessRuleService businessRuleService;
+  private final SentimentAnalysisMapper mapper;
+  private final RestTemplate restTemplate;
 
-    private static final String PYTHON_URL = "http://python-api:5000/predict";
+  @Transactional
+  public SentimentResponse analisarSentimento(SentimentRequest request) {
+    String texto = request.getText().trim();
 
-    public SentimentService(SentimentAnalysisRepository repository, BusinessRuleService businessRuleService) {
-        this.repository = repository;
-        this.businessRuleService = businessRuleService;
+    log.debug("Iniciando análise para texto com {} caracteres", texto.length());
+
+    SentimentType tipoSentimento = chamarIAPython(texto);
+    SentimentResponse response = construirResposta(texto, tipoSentimento);
+
+    persistirAnalise(request, response);
+
+    log.info("Análise concluída - Sentimento: {}, Prioridade: {}, Setor: {}",
+        tipoSentimento, response.getPrioridade(), response.getSetor());
+
+    return response;
+  }
+
+  @Transactional(readOnly = true)
+  public List<SentimentAnalysis> listarHistorico() {
+    return repository.findTop10ByOrderByCreatedAtDesc();
+  }
+
+  @Transactional(readOnly = true)
+  public List<SentimentStatsResponse> gerarEstatisticas() {
+    long total = repository.count();
+
+    log.debug("Gerando estatísticas para {} análises", total);
+
+    return java.util.Arrays.stream(SentimentType.values())
+        .map(tipo -> {
+          long quantidade = repository.countByPrediction(tipo);
+          return new SentimentStatsResponse(tipo, quantidade, (double) total);
+        })
+        .collect(Collectors.toList());
+  }
+
+  private SentimentType chamarIAPython(String texto) {
+    try {
+      Map<String, String> corpo = new HashMap<>();
+      corpo.put("text", texto);
+
+      log.debug("Enviando texto para IA Python");
+
+      Map<String, Object> resposta = restTemplate.postForObject(PYTHON_URL, corpo, Map.class);
+
+      if (resposta != null && resposta.containsKey("previsao")) {
+        String previsao = (String) resposta.get("previsao");
+        log.debug("IA Python respondeu: {}", previsao);
+        return mapearPrevisao(previsao);
+      } else {
+        log.warn("IA Python retornou resposta inválida");
+      }
+    } catch (Exception e) {
+      log.error("Erro ao conectar com API Python: {}", e.getMessage());
     }
 
-    private String chamarIAPython(String texto) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            Map<String, String> corpo = new HashMap<>();
-            corpo.put("text", texto);
+    log.info("Usando fallback: NEUTRO");
+    return SentimentType.NEUTRO;
+  }
 
-            logger.info("Enviando texto para IA Python: '{}'", texto);
+  private SentimentType mapearPrevisao(String previsao) {
+    return switch (previsao.toLowerCase()) {
+      case "positivo" -> SentimentType.POSITIVO;
+      case "negativo" -> SentimentType.NEGATIVO;
+      default -> SentimentType.NEUTRO;
+    };
+  }
 
-            Map<String, Object> resposta = restTemplate.postForObject(PYTHON_URL, corpo, Map.class);
+  private SentimentResponse construirResposta(String texto, SentimentType tipoSentimento) {
+    String setor = businessRuleService.identificarSetor(texto);
 
-            if (resposta != null && resposta.containsKey("previsao")) {
-                String previsao = (String) resposta.get("previsao");
-                logger.info("IA Python respondeu: {}", previsao);
-                return previsao;
-            } else {
-                logger.warn("IA Python retornou resposta nula ou sem chave 'previsao'.");
-            }
-        } catch (Exception e) {
-            logger.error("⚠️ Erro de conexão com a API Python: {}", e.getMessage());
-        }
-        logger.info("Usando fallback: Neutro");
-        return "Neutro";
-    }
+    return SentimentResponse.builder()
+        .previsao(tipoSentimento)
+        .probabilidade(CONFIDENCE_DEFAULT)
+        .prioridade(businessRuleService.identificarPrioridade(texto, tipoSentimento))
+        .setor(setor)
+        .tags(businessRuleService.extrairTags(texto))
+        .sugestaoResposta(businessRuleService.gerarSugestao(tipoSentimento, setor))
+        .build();
+  }
 
-    /**
-     * Analisa sentimento do texto.
-     */
-    public SentimentResponse analisarSentimento(SentimentRequest request) {
-        String texto = request.getText().trim();
-        if (texto.isEmpty()) {
-            logger.warn("Texto vazio enviado para análise.");
-            return new SentimentResponse(SentimentType.NEUTRO, 0.0, "Baixa", new ArrayList<>(), "Geral", "Sem sugestão");
-        }
-
-        String resultadoIA = chamarIAPython(texto);
-
-        // Converte resultado da IA para SentimentType
-        SentimentType tipoModel;
-        switch (resultadoIA.toLowerCase()) {
-            case "positivo":
-                tipoModel = SentimentType.POSITIVO;
-                break;
-            case "negativo":
-                tipoModel = SentimentType.NEGATIVO;
-                break;
-            default:
-                tipoModel = SentimentType.NEUTRO;
-                break;
-        }
-
-        // Regras de negócio
-        String setor = businessRuleService.identificarSetor(texto);
-        String prioridade = businessRuleService.identificarPrioridade(texto, tipoModel);
-        List<String> tags = businessRuleService.extrairTags(texto);
-        String sugestao = businessRuleService.gerarSugestao(tipoModel, setor);
-
-        // DTO de resposta
-        SentimentResponse dto = new SentimentResponse(
-                tipoModel,
-                0.85, // Pode futuramente vir da IA
-                prioridade,
-                tags,
-                setor,
-                sugestao
-        );
-
-        // Salva no banco
-        SentimentAnalysis analysis = new SentimentAnalysis(request, dto);
-        repository.save(analysis);
-
-        logger.info("Análise finalizada: '{}' -> {} | Setor: {} | Prioridade: {}", texto, tipoModel, setor, prioridade);
-
-        return dto;
-    }
-
-    public List<SentimentAnalysis> listarHistorico() {
-        return repository.findTop10ByOrderByCreatedAtDesc();
-    }
-
-    public List<SentimentStatsResponse> gerarEstatisticas() {
-        long total = repository.count();
-        List<SentimentStatsResponse> stats = new ArrayList<>();
-        for (SentimentType tipo : SentimentType.values()) {
-            long quantidade = repository.countByPrediction(tipo);
-            stats.add(new SentimentStatsResponse(tipo, quantidade, (double) total));
-        }
-        return stats;
-    }
+  private void persistirAnalise(SentimentRequest request, SentimentResponse response) {
+    SentimentAnalysis analysis = mapper.toEntity(request, response);
+    repository.save(analysis);
+    log.debug("Análise persistida com sucesso");
+  }
 }
