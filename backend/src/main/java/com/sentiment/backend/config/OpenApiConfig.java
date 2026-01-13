@@ -20,7 +20,7 @@ public class OpenApiConfig {
   @Value("${app.version:1.0.0}")
   private String appVersion;
 
-  @Value("${server.port:8080}")
+  @Value("${server.port:8082}")
   private String serverPort;
 
   @Bean
