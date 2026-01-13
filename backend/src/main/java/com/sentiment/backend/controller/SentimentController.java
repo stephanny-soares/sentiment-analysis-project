@@ -4,48 +4,66 @@ import com.sentiment.backend.dto.SentimentRequest;
 import com.sentiment.backend.dto.SentimentResponse;
 import com.sentiment.backend.dto.SentimentStatsResponse;
 import com.sentiment.backend.service.SentimentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-/**
- * Controller responsável pelos endpoints de análise de sentimento e estatísticas.
- */
-@CrossOrigin(origins = "*")
+@Slf4j
 @RestController
 @RequestMapping("/sentiment")
+@RequiredArgsConstructor
+@Tag(name = "Sentiment Analysis", description = "APIs para análise de sentimento de textos e estatísticas")
 public class SentimentController {
 
-    private static final Logger logger = LoggerFactory.getLogger(SentimentController.class);
-    private final SentimentService sentimentService;
+  private final SentimentService sentimentService;
 
-    @Autowired
-    public SentimentController(SentimentService sentimentService) {
-        this.sentimentService = sentimentService;
-    }
+  @Operation(summary = "Analisa o sentimento de um texto", description = "Recebe um texto e retorna a classificação do sentimento com probabilidade")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Análise realizada com sucesso", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = SentimentResponse.class))),
+      @ApiResponse(responseCode = "400", description = "Dados inválidos"),
+      @ApiResponse(responseCode = "500", description = "Erro interno")
+  })
+  @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SentimentResponse> analisar(
+      @Parameter(description = "Texto para análise", required = true) @Valid @RequestBody SentimentRequest request) {
 
-    /**
-     * Endpoint POST que recebe um texto e retorna a análise de sentimento.
-     */
-    @PostMapping
-    public ResponseEntity<SentimentResponse> analisar(@Valid @RequestBody SentimentRequest request) {
-        logger.info("Recebido texto para análise: {}", request.getText());
-        SentimentResponse response = sentimentService.analisarSentimento(request);
-        logger.info("Retornando previsão: {} ({})", response.getPrevisao(), response.getProbabilidade());
-        return ResponseEntity.ok(response);
-    }
+    log.debug("Recebida requisição de análise com {} caracteres", request.getText().length());
 
-    /**
-     * Endpoint GET que retorna estatísticas de sentimento.
-     */
-    @GetMapping("/stats")
-    public ResponseEntity<List<SentimentStatsResponse>> getStats() {
-        List<SentimentStatsResponse> stats = sentimentService.gerarEstatisticas();
-        return ResponseEntity.ok(stats);
-    }
+    SentimentResponse response = sentimentService.analisarSentimento(request);
+
+    log.info("Análise concluída - Sentimento: {}, Confiança: {}%",
+        response.getPrevisao(),
+        String.format("%.2f", response.getProbabilidade() * 100));
+
+    return ResponseEntity.ok(response);
+  }
+
+  @Operation(summary = "Obtém estatísticas", description = "Retorna métricas agregadas das análises realizadas")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Estatísticas recuperadas", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, array = @ArraySchema(schema = @Schema(implementation = SentimentStatsResponse.class)))),
+      @ApiResponse(responseCode = "500", description = "Erro ao buscar estatísticas")
+  })
+  @GetMapping(value = "/stats", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SentimentStatsResponse>> obterEstatisticas() {
+    log.debug("Requisição de estatísticas recebida");
+
+    List<SentimentStatsResponse> stats = sentimentService.gerarEstatisticas();
+
+    log.info("Estatísticas geradas: {} tipos de sentimento", stats.size());
+
+    return ResponseEntity.ok(stats);
+  }
 }
