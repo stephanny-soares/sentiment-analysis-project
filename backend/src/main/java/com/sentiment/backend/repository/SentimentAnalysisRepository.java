@@ -12,15 +12,11 @@ import java.util.List;
 @Repository
 public interface SentimentAnalysisRepository extends JpaRepository<SentimentAnalysis, Long> {
 
-    // Buscar as 10 análises mais recentes
-    List<SentimentAnalysis> findTop10ByOrderByCreatedAtDesc();
+  List<SentimentAnalysis> findTop10ByOrderByCreatedAtDesc();
 
-    // Contagem para as estatísticas
-    long countByPrediction(SentimentType prediction);
+  long countByPrediction(SentimentType prediction);
 
-    // Buscas por tipo
-    List<SentimentAnalysis> findByPrediction(SentimentType prediction);
+  List<SentimentAnalysis> findByPrediction(SentimentType prediction);
 
-    // Consultas paginadas
-    Page<SentimentAnalysis> findByPrediction(SentimentType prediction, Pageable pageable);
+  Page<SentimentAnalysis> findByPrediction(SentimentType prediction, Pageable pageable);
 }
