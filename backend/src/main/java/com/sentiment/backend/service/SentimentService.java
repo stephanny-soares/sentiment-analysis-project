@@ -68,6 +68,8 @@ public class SentimentService {
         .collect(Collectors.toList());
   }
 
+  private Map<String, Object> respostaPython;
+
   private SentimentType chamarIAPython(String texto, Integer rating, Boolean recommendToFriend) {
     try {
       Map<String, Object> corpo = new HashMap<>();
@@ -88,6 +90,9 @@ public class SentimentService {
       log.debug("Enviando texto para IA Python: {}", url);
 
       Map<String, Object> resposta = restTemplate.postForObject(url, corpo, Map.class);
+      
+      // Guardar a resposta completa da API para extrair confiança depois
+      this.respostaPython = resposta;
 
       if (resposta != null && resposta.containsKey("previsao")) {
         String previsao = (String) resposta.get("previsao");
@@ -114,10 +119,19 @@ public class SentimentService {
 
   private SentimentResponse construirResposta(String texto, SentimentType tipoSentimento) {
     String setor = businessRuleService.identificarSetor(texto);
+    
+    // Extrair confiança real da resposta Python, com fallback
+    Double confianca = CONFIDENCE_DEFAULT;
+    if (respostaPython != null && respostaPython.containsKey("probabilidade")) {
+      Object prob = respostaPython.get("probabilidade");
+      if (prob instanceof Number) {
+        confianca = ((Number) prob).doubleValue();
+      }
+    }
 
     return SentimentResponse.builder()
         .previsao(tipoSentimento)
-        .probabilidade(CONFIDENCE_DEFAULT)
+        .probabilidade(confianca)
         .prioridade(businessRuleService.identificarPrioridade(texto, tipoSentimento))
         .setor(setor)
         .tags(businessRuleService.extrairTags(texto))
