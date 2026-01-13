@@ -1,31 +1,39 @@
 package com.sentiment.backend.util;
 
-/**
- * Resultado interno da análise de sentimento.
- */
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.ToString;
+
+@Getter
+@ToString
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class SentimentAnalysisResult {
 
-    public enum SentimentType {
-        POSITIVO,
-        NEUTRO,
-        NEGATIVO
-    }
+  public enum SentimentType {
+    POSITIVO,
+    NEUTRO,
+    NEGATIVO
+  }
 
-    private final SentimentType type;
-    private final int score;
-    private final double probability;
+  private final SentimentType type;
+  private final double score;
+  private final double probability;
 
-    public SentimentAnalysisResult(SentimentType type, int score, double probability) {
-        this.type = type;
-        this.score = score;
-        this.probability = probability;
-    }
+  public static SentimentAnalysisResult of(SentimentType type, double score, double probability) {
+    double normalizedProbability = Math.max(0.0, Math.min(1.0, probability));
+    return new SentimentAnalysisResult(type, score, normalizedProbability);
+  }
 
-    public SentimentType getType() { return type; }
-    public int getScore() { return score; }
+  public double getProbabilidade() {
+    return probability;
+  }
 
-    // Altere este nome ou adicione este como um "alias"
-    public double getProbabilidade() { return probability; }
+  public boolean hasHighConfidence() {
+    return probability >= 0.7;
+  }
 
-    public double getProbability() { return probability; }
+  public double getConfidencePercentage() {
+    return probability * 100;
+  }
 }
