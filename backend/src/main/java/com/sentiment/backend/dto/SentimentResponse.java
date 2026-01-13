@@ -2,44 +2,38 @@ package com.sentiment.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sentiment.backend.model.SentimentType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * DTO que representa a resposta da análise de sentimento.
- */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Resposta da análise de sentimento")
 public class SentimentResponse {
 
-    @JsonProperty("prediction")
-    private final SentimentType previsao; // já é enum, não String
+  @JsonProperty("prediction")
+  @Schema(description = "Sentimento previsto", example = "POSITIVO")
+  private SentimentType previsao;
 
-    @JsonProperty("confidence")
-    private final Double probabilidade;
+  @JsonProperty("confidence")
+  @Schema(description = "Confiança da previsão (0.0 a 1.0)", example = "0.95")
+  private Double probabilidade;
 
-    private String prioridade;
-    private List<String> tags;
-    private String setor;
-    private String sugestaoResposta;
+  @Schema(description = "Prioridade de atendimento", example = "ALTA")
+  private String prioridade;
 
-    public SentimentResponse(SentimentType previsao, Double probabilidade,
-                             String prioridade, List<String> tags,
-                             String setor, String sugestaoResposta) {
-        this.previsao = previsao;
-        this.probabilidade = probabilidade;
-        this.prioridade = prioridade;
-        this.tags = tags;
-        this.setor = setor;
-        this.sugestaoResposta = sugestaoResposta;
-    }
+  @Schema(description = "Tags relacionadas ao sentimento", example = "[\"elogio\", \"produto\"]")
+  private List<String> tags;
 
-    public SentimentType getPrevisao() {
-        return previsao;
-    }
-    public Double getProbabilidade() {
-        return probabilidade;
-    }
-    public String getPrioridade() { return prioridade; }
-    public List<String> getTags() { return tags; }
-    public String getSetor() { return setor; }
-    public String getSugestaoResposta() { return sugestaoResposta; }
+  @Schema(description = "Setor recomendado", example = "Atendimento")
+  private String setor;
+
+  @Schema(description = "Sugestão de resposta automática")
+  private String sugestaoResposta;
 }
