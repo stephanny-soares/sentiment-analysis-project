@@ -10,15 +10,7 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s; }
-        .critical-pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-    </style>
+    <link rel="stylesheet" href="app.css">
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
 
@@ -46,8 +38,33 @@
                         <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-200">💬 Analisador de Feedbacks</h2>
                         <textarea id="textInput" class="w-full h-40 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg transition-all dark:text-white" placeholder="Digite o comentário do cliente..."></textarea>
                         
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Avaliação (Opcional)</label>
+                                <div class="flex items-center gap-1 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl">
+                                    <button type="button" onclick="setRating(1)" class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="1">☆</button>
+                                    <button type="button" onclick="setRating(2)" class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="2">☆</button>
+                                    <button type="button" onclick="setRating(3)" class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="3">☆</button>
+                                    <button type="button" onclick="setRating(4)" class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="4">☆</button>
+                                    <button type="button" onclick="setRating(5)" class="star-btn text-3xl hover:scale-110 transition-transform" data-rating="5">☆</button>
+                                    <button type="button" onclick="clearRating()" class="ml-2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-bold">✕</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Recomendaria? (Opcional)</label>
+                                <div class="flex items-center justify-center gap-4 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl">
+                                    <button type="button" onclick="setRecommend(true)" id="thumbUp" class="thumb-btn text-4xl hover:scale-110 transition-transform opacity-40">👍</button>
+                                    <button type="button" onclick="setRecommend(false)" id="thumbDown" class="thumb-btn text-4xl hover:scale-110 transition-transform opacity-40">👎</button>
+                                    <button type="button" onclick="clearRecommend()" class="ml-2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 font-bold">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="flex justify-between items-center mt-4">
-                            <p class="text-xs text-slate-400 font-medium">Análise inteligente com priorização de atendimento.</p>
+                            <div>
+                                <p class="text-xs text-slate-400 font-medium">Análise inteligente com priorização de atendimento.</p>
+                                <p id="modelInfo" class="text-[10px] text-slate-400 font-bold mt-1 italic">Modelo: Básico</p>
+                            </div>
                             <button onclick="analisar()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg active:scale-95">Analisar Sentimento</button>
                         </div>
 
@@ -107,146 +124,6 @@
         </main>
     </div>
 
-    <script>
-        const API_BASE = "http://localhost:8082/sentiment";
-        let chart;
-
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            document.getElementById('themeIcon').innerText = isDark ? '☀️' : '🌙';
-            atualizarDashboard(); 
-        }
-
-        async function analisar() {
-            const textInput = document.getElementById('textInput');
-            const text = textInput.value.trim();
-            const resCard = document.getElementById('resultCard');
-            if (text.length < 4) return alert("Texto muito curto!");
-
-            try {
-                const response = await fetch(API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
-                });
-                const data = await response.json();
-
-                if (response.ok) {
-                    resCard.classList.remove('hidden');
-                    resCard.className = 'mt-8 p-6 rounded-2xl border-2 transition-all';
-                    
-                    const previsao = data.prediction;
-                    let style = 'bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-400';
-                    if (previsao === 'POSITIVO') style = 'bg-green-50 border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-700 dark:text-green-400';
-                    if (previsao === 'NEGATIVO') style = 'bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-700 dark:text-red-400';
-
-                    resCard.classList.add(...style.split(' '));
-                    if (data.prioridade === 'CRÍTICA') resCard.classList.add('critical-pulse');
-
-                    document.getElementById('predictionText').innerText = previsao;
-                    document.getElementById('priorityText').innerText = data.prioridade;
-                    document.getElementById('sectorBadge').innerText = "SETOR: " + data.setor;
-                    document.getElementById('confidenceText').innerText = "Confiança: " + (data.confidence * 100).toFixed(1) + '%';
-                    document.getElementById('suggestionText').innerText = `"${data.sugestaoResposta}"`;
-
-                    const tagsContainer = document.getElementById('tagsContainer');
-                    tagsContainer.innerHTML = (data.tags || []).map(tag => 
-                        `<span class="bg-black/10 dark:bg-white/10 px-2 py-1 rounded text-[10px] font-black">#${tag.toUpperCase()}</span>`
-                    ).join('') || '<span class="text-[10px] opacity-40">Sem tags</span>';
-
-                    adicionarAoHistorico(text, previsao, data.setor, data.prioridade);
-                    atualizarDashboard();
-                    textInput.value = '';
-                }
-            } catch (err) { alert("Erro de conexão!"); }
-        }
-
-        function adicionarAoHistorico(texto, previsao, setor, prioridade) {
-            const table = document.getElementById('historyBody');
-            let colors = {
-                dot: "bg-yellow-400",
-                text: "text-yellow-600 dark:text-yellow-400",
-                bg: "bg-yellow-50/50 dark:bg-yellow-900/10"
-            };
-
-            if (previsao === 'POSITIVO') {
-                colors = { dot: "bg-green-500", text: "text-green-600 dark:text-green-400", bg: "bg-green-50/50 dark:bg-green-900/10" };
-            } else if (previsao === 'NEGATIVO') {
-                colors = { dot: "bg-red-500", text: "text-red-600 dark:text-red-400", bg: "bg-red-50/50 dark:bg-red-900/10" };
-            }
-
-            const prioStyle = prioridade === 'CRÍTICA' ? 'bg-red-600 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
-            
-            const row = `
-                <tr class="border-b border-slate-100 dark:border-slate-800 ${colors.bg} transition-all hover:bg-white dark:hover:bg-slate-800">
-                    <td class="py-4 px-4 rounded-l-xl">
-                        <div class="flex items-center gap-3">
-                            <div class="w-2.5 h-2.5 rounded-full ${colors.dot}"></div>
-                            <div>
-                                <span class="text-[9px] font-black px-2 py-0.5 rounded bg-white/80 dark:bg-slate-700 text-slate-500 dark:text-slate-400 mb-1 inline-block uppercase tracking-tighter">${setor}</span>
-                                <p class="text-slate-700 dark:text-slate-200 font-medium line-clamp-1 max-w-md">${texto}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="py-4 px-4 text-center">
-                        <span class="px-2 py-1 rounded text-[10px] font-black ${prioStyle}">${prioridade}</span>
-                    </td>
-                    <td class="py-4 px-4 text-right rounded-r-xl">
-                        <span class="font-black italic tracking-tighter ${colors.text}">${previsao}</span>
-                    </td>
-                </tr>
-            `;
-            table.innerHTML = row + table.innerHTML;
-        }
-
-        async function atualizarDashboard() {
-            try {
-                const res = await fetch(`${API_BASE}/stats`);
-                const stats = await res.json();
-                if (!stats || stats.length === 0) return;
-                
-                const labels = stats.map(s => {
-                    return (s.tipo || s.label || s.nome || Object.values(s).find(v => typeof v === 'string') || "N/A").toUpperCase();
-                });
-                const values = stats.map(s => {
-                    return s.quantidade || s.total || s.valor || Object.values(s).find(v => typeof v === 'number') || 0;
-                });
-
-                const isDark = document.documentElement.classList.contains('dark');
-                if (chart) chart.destroy();
-                const ctx = document.getElementById('sentimentChart').getContext('2d');
-                chart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: values,
-                            backgroundColor: ['#22c55e', '#facc15', '#ef4444', '#6366f1'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: { 
-                        maintainAspectRatio: false, 
-                        cutout: '80%',
-                        plugins: { 
-                            legend: { 
-                                display: true,
-                                position: 'bottom', 
-                                labels: { 
-                                    usePointStyle: true, 
-                                    color: isDark ? '#f8fafc' : '#475569',
-                                    font: { weight: 'bold', size: 11 },
-                                    padding: 20
-                                } 
-                            } 
-                        }
-                    }
-                });
-            } catch (err) { console.error("Erro no gráfico:", err); }
-        }
-
-        window.onload = atualizarDashboard;
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

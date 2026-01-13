@@ -43,7 +43,9 @@ class SentimentServiceTest {
     @Test
     void deveRetornarSentimentoPositivo() {
         configurarMocksDeNegocio(SentimentType.POSITIVO);
-        SentimentRequest request = new SentimentRequest("Hoje o dia foi muito bom!");
+        SentimentRequest request = SentimentRequest.builder()
+            .text("Hoje o dia foi muito bom!")
+            .build();
 
         SentimentResponse response = service.analisarSentimento(request);
 
@@ -53,7 +55,9 @@ class SentimentServiceTest {
     @Test
     void deveRetornarSentimentoNegativo() {
         configurarMocksDeNegocio(SentimentType.NEGATIVO);
-        SentimentRequest request = new SentimentRequest("O filme não foi bom");
+        SentimentRequest request = SentimentRequest.builder()
+            .text("O filme não foi bom")
+            .build();
 
         SentimentResponse response = service.analisarSentimento(request);
 
@@ -63,7 +67,9 @@ class SentimentServiceTest {
     @Test
     void deveRetornarSentimentoNeutro() {
         configurarMocksDeNegocio(SentimentType.NEUTRO);
-        SentimentRequest request = new SentimentRequest("A reunião foi normal");
+        SentimentRequest request = SentimentRequest.builder()
+            .text("A reunião foi normal")
+            .build();
 
         SentimentResponse response = service.analisarSentimento(request);
 

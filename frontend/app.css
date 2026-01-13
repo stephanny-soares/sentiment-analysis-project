@@ -1,0 +1,33 @@
+body {
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s;
+}
+
+.critical-pulse {
+  animation: pulse-red 2s infinite;
+}
+
+@keyframes pulse-red {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.star-btn, .thumb-btn {
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.star-btn:active, .thumb-btn:active {
+  transform: scale(0.95) !important;
+}

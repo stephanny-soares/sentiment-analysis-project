@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SentimentService {
 
-  private static final String PYTHON_URL = "http://python-api:5000/predict";
+  private static final String PYTHON_URL = "http://python-api:8000/predict";
+  private static final String PYTHON_URL_AUTO = "http://python-api:8000/predict/auto";
   private static final double CONFIDENCE_DEFAULT = 0.85;
 
   private final SentimentAnalysisRepository repository;
@@ -37,7 +38,7 @@ public class SentimentService {
 
     log.debug("Iniciando análise para texto com {} caracteres", texto.length());
 
-    SentimentType tipoSentimento = chamarIAPython(texto);
+    SentimentType tipoSentimento = chamarIAPython(texto, request.getRating(), request.getRecommendToFriend());
     SentimentResponse response = construirResposta(texto, tipoSentimento);
 
     persistirAnalise(request, response);
@@ -67,14 +68,26 @@ public class SentimentService {
         .collect(Collectors.toList());
   }
 
-  private SentimentType chamarIAPython(String texto) {
+  private SentimentType chamarIAPython(String texto, Integer rating, Boolean recommendToFriend) {
     try {
-      Map<String, String> corpo = new HashMap<>();
+      Map<String, Object> corpo = new HashMap<>();
       corpo.put("text", texto);
 
-      log.debug("Enviando texto para IA Python");
+      // Se tiver rating e recommendToFriend, usar endpoint /auto (escolhe modelo automaticamente)
+      boolean useEnhanced = rating != null && recommendToFriend != null;
+      String url = useEnhanced ? PYTHON_URL_AUTO : PYTHON_URL;
 
-      Map<String, Object> resposta = restTemplate.postForObject(PYTHON_URL, corpo, Map.class);
+      if (useEnhanced) {
+        corpo.put("rating", rating);
+        corpo.put("recommend_to_friend", recommendToFriend);
+        log.debug("Usando modelo enhanced - Rating: {}, Recomenda: {}", rating, recommendToFriend);
+      } else {
+        log.debug("Usando modelo básico");
+      }
+
+      log.debug("Enviando texto para IA Python: {}", url);
+
+      Map<String, Object> resposta = restTemplate.postForObject(url, corpo, Map.class);
 
       if (resposta != null && resposta.containsKey("previsao")) {
         String previsao = (String) resposta.get("previsao");
