@@ -1,0 +1,20 @@
+{
+  "model_type": "Random Forest + Multi-feature",
+  "features": {
+    "tfidf_features": 1000,
+    "rating": true,
+    "recommendation": true,
+    "text_length": true
+  },
+  "accuracy_test": 0.9703818569490211,
+  "precision_test": 0.9837457719721977,
+  "recall_test": 0.9703818569490211,
+  "f1_test": 0.9754211273773107,
+  "classes": [
+    "Negativo",
+    "Neutro",
+    "Positivo"
+  ],
+  "training_samples": 103176,
+  "test_samples": 25795
+}

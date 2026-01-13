@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Models (descomente se os modelos ficarem muito grandes)
+# models/*.joblib
+# models/enhanced/*.joblib
+
+# Datasets (sensíveis)
+datasets/*_temp.csv
+datasets/private_*.csv
+
+# Environment
+.env
+.env.local
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log

@@ -1,0 +1,21 @@
+{
+  "model_type": "Logistic Regression",
+  "vectorizer_type": "TF-IDF",
+  "accuracy_test": 0.7762744717968598,
+  "precision_test": 0.9209343325074707,
+  "recall_test": 0.7762744717968598,
+  "f1_test": 0.8377472670244397,
+  "auc_test": 0.9537923183901333,
+  "num_features": 1000,
+  "num_classes": 3,
+  "sentiment_mapping": {
+    "Negativo": 0,
+    "Neutro": 1,
+    "Positivo": 2
+  },
+  "classes": [
+    "Negativo",
+    "Neutro",
+    "Positivo"
+  ]
+}
