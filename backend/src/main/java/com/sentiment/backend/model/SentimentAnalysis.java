@@ -1,66 +1,60 @@
 package com.sentiment.backend.model;
 
-import com.sentiment.backend.dto.SentimentRequest;
-import com.sentiment.backend.dto.SentimentResponse;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
-@Table(name = "sentiment_analysis")
+@Table(name = "sentiment_analysis", indexes = {
+    @Index(name = "idx_prediction", columnList = "prediction"),
+    @Index(name = "idx_created_at", columnList = "created_at")
+})
 public class SentimentAnalysis {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false, length = 5000)
-    private String text;
+  @Column(nullable = false, length = 5000, columnDefinition = "TEXT")
+  private String text;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SentimentType prediction;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private SentimentType prediction;
 
-    @Column(nullable = false)
-    private Double confidence;
+  @Column(nullable = false)
+  private Double confidence;
 
-    private String prioridade;
-    private String setor;
-    private String sugestaoResposta;
+  @Column(length = 20)
+  private String prioridade;
 
-    @ElementCollection
-    @CollectionTable(name = "sentiment_tags", joinColumns = @JoinColumn(name = "analysis_id"))
-    @Column(name = "tag")
-    private List<String> tags;
+  @Column(length = 100)
+  private String setor;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+  @Column(length = 1000, columnDefinition = "TEXT")
+  private String sugestaoResposta;
 
-    public SentimentAnalysis() {}
+  @ElementCollection
+  @CollectionTable(name = "sentiment_tags", joinColumns = @JoinColumn(name = "analysis_id"))
+  @Column(name = "tag", length = 50)
+  private List<String> tags;
 
-    public SentimentAnalysis(SentimentRequest request, SentimentResponse response) {
-        this.text = request.getText();
-        this.prediction = response.getPrevisao();
-        this.confidence = response.getProbabilidade();
-        this.prioridade = response.getPrioridade();
-        this.setor = response.getSetor();
-        this.sugestaoResposta = response.getSugestaoResposta();
-        this.tags = response.getTags();
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDateTime createdAt;
+
+  @PrePersist
+  protected void onCreate() {
+    if (this.createdAt == null) {
+      this.createdAt = LocalDateTime.now();
     }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // Getters
-    public Long getId() { return id; }
-    public String getText() { return text; }
-    public SentimentType getPrediction() { return prediction; }
-    public Double getConfidence() { return confidence; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public String getPrioridade() { return prioridade; }
-    public String getSetor() { return setor; }
-    public String getSugestaoResposta() { return sugestaoResposta; }
-    public List<String> getTags() { return tags; }
+  }
 }
