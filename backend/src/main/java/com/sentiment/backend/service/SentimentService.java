@@ -71,6 +71,11 @@ public class SentimentService {
             .collect(Collectors.toList());
   }
 
+  @Transactional
+  public void limparHistorico() {
+    repository.deleteAll();
+  }
+
   private Map<String, Object> chamarIAPython(String texto, Integer rating, Boolean recommendToFriend) {
     try {
       Map<String, Object> corpo = new HashMap<>();

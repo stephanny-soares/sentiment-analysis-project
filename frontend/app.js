@@ -217,3 +217,22 @@ async function atualizarDashboard() {
 }
 
 window.onload = atualizarDashboard;
+
+function limparDados() {
+    if (confirm("⚠️ ATENÇÃO: Isso apagará todas as análises do banco de dados. Deseja continuar?")) {
+        fetch(`${API_BASE}/clear`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Erro ao tentar limpar os dados no servidor.");
+            }
+        })
+        .catch(error => {
+            console.error("Erro na requisição:", error);
+            alert("Não foi possível conectar ao servidor para limpar os dados.");
+        });
+    }
+}

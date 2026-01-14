@@ -66,4 +66,10 @@ public class SentimentController {
 
     return ResponseEntity.ok(stats);
   }
+
+  @DeleteMapping("/clear")
+  public ResponseEntity<Void> limpar() {
+    sentimentService.limparHistorico();
+    return ResponseEntity.ok().build();
+  }
 }

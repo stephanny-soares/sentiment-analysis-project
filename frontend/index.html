@@ -103,10 +103,16 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="max-w-6xl mx-auto mt-8">
                 <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-                    <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-200 font-bold">📜 Histórico de Atendimento</h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200 font-bold">📜 Histórico de Atendimento</h2>
+                        <button onclick="limparDados()" class="text-xs font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all uppercase tracking-widest border border-red-200 dark:border-red-800 rounded-lg px-3 py-2">
+                            🗑️ Limpar Tudo
+                        </button>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-separate border-spacing-y-2">
                             <thead>
@@ -116,14 +122,12 @@
                                     <th class="pb-3 px-4 text-right">Sentimento</th>
                                 </tr>
                             </thead>
-                            <tbody id="historyBody" class="text-sm"></tbody>
+                            <tbody id="historyBody" class="text-sm">
+                                </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        </main>
-    </div>
-
     <script src="app.js"></script>
 </body>
 </html>
