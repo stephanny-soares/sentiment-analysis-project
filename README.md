@@ -83,7 +83,7 @@ Serviços disponíveis:
 ```plaintext
 Backend: http://localhost:8082
 Python API: http://localhost:5000
-Frontend: http://localhost:8080 (ou abrir frontend/index.html)
+Frontend: http://localhost:8080
 ```
 ### Python (data_api)
 ```plaintext
