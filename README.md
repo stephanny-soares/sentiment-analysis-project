@@ -133,5 +133,11 @@ Data Science:
 - https://github.com/kaio326
 
 ---
+## Links relacionados
+
+Data Science do projeto: https://github.com/kaio326/hackathon-nocountry-one-alura
+
+---
 
 #### Solução orientada à análise de sentimentos para otimização de fluxos de trabalho em Marketing e suporte à decisão em Customer Experience.
+ ---
